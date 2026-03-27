@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مختبر المادة الصلبة المتطور</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --crystalline-color: #e74c3c;
+            --amorphous-color: #3498db;
+            --background-color: #f0f8ff;
+            --text-color: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-color);
+        }
+        
+        #container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.5em;
+        }
+        
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .tab.active {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .simulation-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .simulation-area {
+            width: 100%;
+            height: 400px;
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            background-color: #f9f9f9;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        #svg-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        .control-group {
+            display: flex;
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 8px;
+            align-items: center;
+        }
+        
+        button {
+            padding: 12px 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 5px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        
+        .slider-container label {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+            margin: 0 10px;
+        }
+        
+        .explanation {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            text-align: right;
+            border-left: 5px solid var(--primary-color);
+            transition: all 0.3s;
+        }
+        
+        .explanation h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            border-bottom: 2px dashed var(--primary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .examples {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .example-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            width: 120px;
+            margin: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .example-card img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        
+        .example-card p {
+            margin: 0;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .properties {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .property-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .property-card i {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .quiz-container {
+            margin-top: 30px;
+            background-color: #e1f5fe;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-option {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quiz-option:hover {
+            background-color: #b3e5fc;
+        }
+        
+        .quiz-option.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .quiz-feedback {
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 24px;
+        }
+        
+        .particle-info {
+            position: absolute;
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .properties {
+                grid-template-columns: 1fr;
+            }
+            
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div id="container">
+        <div class="header">
+            <div class="logo">مختبر المادة الصلبة</div>
+            <div>
+                <button onclick="showQuiz()"><i class="fas fa-question-circle"></i> اختبر فهمك</button>
+                <button onclick="resetLab()"><i class="fas fa-redo"></i> إعادة تعيين</button>
+            </div>
+        </div>
+        
+        <h1><i class="fas fa-flask"></i> مختبر المادة الصلبة التفاعلي</h1>
+        
+        <div class="tab-container">
+            <button class="tab active" onclick="showTab('crystalline')">
+                <i class="fas fa-gem"></i> المواد البلورية
+            </button>
+            <button class="tab" onclick="showTab('amorphous')">
+                <i class="fas fa-glass-whiskey"></i> المواد غير البلورية
+            </button>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="simulation-area" id="simulation">
+                <svg id="svg-container" width="100%" height="100%"></svg>
+                <div class="particle-info" id="particle-info"></div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <button onclick="zoomIn()"><i class="fas fa-search-plus"></i> تكبير</button>
+                    <button onclick="zoomOut()"><i class="fas fa-search-minus"></i> تصغير</button>
+                    <div class="slider-container">
+                        <label for="zoom-slider">مستوى التكبير:</label>
+                        <input type="range" id="zoom-slider" min="0.5" max="2" step="0.1" value="1" oninput="updateZoom(this.value)">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button onclick="toggleVibration()" id="vibration-btn">
+                        <i class="fas fa-vibration"></i> تبديل الاهتزاز
+                    </button>
+                    <div class="slider-container">
+                        <label for="vibration-slider">قوة الاهتزاز:</label>
+                        <input type="range" id="vibration-slider" min="0" max="5" step="0.5" value="2" oninput="updateVibration(this.value)">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button onclick="toggleTemperature()" id="temp-btn">
+                        <i class="fas fa-temperature-low"></i> تغيير الحرارة
+                    </button>
+                    <div class="slider-container">
+                        <label for="temp-slider">درجة الحرارة:</label>
+                        <input type="range" id="temp-slider" min="0" max="100" step="1" value="25" oninput="updateTemperature(this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="examples" id="examples">
+            <!-- سيتم ملؤها بالكود -->
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <!-- سيتم ملؤها بالكود -->
+        </div>
+        
+        <div class="quiz-container" id="quiz-container">
+            <div class="quiz-question" id="quiz-question"></div>
+            <div class="quiz-options" id="quiz-options"></div>
+            <div class="quiz-feedback" id="quiz-feedback"></div>
+            <button onclick="checkAnswer()">تحقق من الإجابة</button>
+            <button onclick="nextQuestion()" style="display:none;" id="next-btn">السؤال التالي</button>
+        </div>
+    </div>
+
+    <script>
+        // الحالة الحالية للمحاكاة
+        const state = {
+            currentTab: 'crystalline',
+            zoom: 1,
+            vibrating: false,
+            vibrationStrength: 2,
+            temperature: 25,
+            vibrationInterval: null,
+            particles: [],
+            quizQuestions: [],
+            currentQuestion: 0,
+            selectedOption: null
+        };
+        
+        // أمثلة على المواد
+        const examples = {
+            crystalline: [
+                { name: "ملح الطعام", img: "https://cdn-icons-png.flaticon.com/512/2503/2503277.png" },
+                { name: "السكر", img: "https://cdn-icons-png.flaticon.com/512/2754/2754270.png" },
+                { name: "الألماس", img: "https://cdn-icons-png.flaticon.com/512/3132/3132693.png" },
+                { name: "الثلج", img: "https://cdn-icons-png.flaticon.com/512/3208/3208676.png" },
+                { name: "الكوارتز", img: "https://cdn-icons-png.flaticon.com/512/3579/3579035.png" }
+            ],
+            amorphous: [
+                { name: "الزجاج", img: "https://cdn-icons-png.flaticon.com/512/2933/2933245.png" },
+                { name: "البلاستيك", img: "https://cdn-icons-png.flaticon.com/512/2936/2936886.png" },
+                { name: "المطاط", img: "https://cdn-icons-png.flaticon.com/512/3022/3022670.png" },
+                { name: "الشمع", img: "https://cdn-icons-png.flaticon.com/512/3659/3659898.png" },
+                { name: "اللدائن", img: "https://cdn-icons-png.flaticon.com/512/2936/2936886.png" }
+            ]
+        };
+        
+        // أسئلة الاختبار
+        const quizData = [
+            {
+                question: "أي من المواد التالية تعتبر مادة صلبة بلورية؟",
+                options: ["الزجاج", "المطاط", "ملح الطعام", "البلاستيك"],
+                answer: 2,
+                feedback: "الإجابة الصحيحة هي ملح الطعام. المواد البلورية لها ترتيب جزيئي منتظم مثل الملح والسكر والألماس."
+            },
+            {
+                question: "ما الذي يحدث لجزيئات المادة الصلبة عند تسخينها؟",
+                options: ["تتوقف عن الحركة", "تهتز أكثر", "تتحرك بحرية كالسائل", "تتبخر فوراً"],
+                answer: 1,
+                feedback: "عند تسخين المادة الصلبة، تكتسب الجزيئات طاقة وتزداد حركة الاهتزاز في أماكنها."
+            },
+            {
+                question: "أي من الخصائص التالية تنطبق على المواد الصلبة؟",
+                options: ["شكل متغير", "حجم ثابت", "جزيئات متباعدة", "قابلة للانضغاط بسهولة"],
+                answer: 1,
+                feedback: "المواد الصلبة لها شكل وحجم ثابتان بسبب تراص الجزيئات بشكل قوي واهتزازها في أماكنها."
+            },
+            {
+                question: "ما الفرق الرئيسي بين المواد البلورية وغير البلورية؟",
+                options: ["اللون", "الترتيب الجزيئي", "الكثافة", "الصلابة"],
+                answer: 1,
+                feedback: "الفرق الرئيسي هو الترتيب الجزيئي. البلورية لها ترتيب منتظم بينما غير البلورية عشوائية الترتيب."
+            }
+        ];
+        
+        // تهيئة المحاكاة
+        function initSimulation() {
+            state.quizQuestions = [...quizData];
+            drawParticles();
+            updateExamples();
+            updateExplanation();
+            setupParticleHover();
+        }
+        
+        // عرض تبويب معين
+        function showTab(tabName) {
+            state.currentTab = tabName;
+            
+            // تحديث أزرار التبويبات
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // تحديث الشرح والأمثلة
+            updateExplanation();
+            updateExamples();
+            
+            // إعادة رسم الجزيئات
+            drawParticles();
+        }
+        
+        // تحديث أمثلة المواد
+        function updateExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            
+            const currentExamples = state.currentTab === 'crystalline' ? 
+                examples.crystalline : examples.amorphous;
+            
+            currentExamples.forEach(example => {
+                const card = document.createElement('div');
+                card.className = 'example-card';
+                card.innerHTML = `
+                    <img src="${example.img}" alt="${example.name}">
+                    <p>${example.name}</p>
+                `;
+                examplesContainer.appendChild(card);
+            });
+        }
+        
+        // تحديث نص الشرح بناءً على التبويب الحالي
+        function updateExplanation() {
+            const explanation = document.getElementById('explanation');
+            
+            if (state.currentTab === 'crystalline') {
+                explanation.innerHTML = `
+                    <h2><i class="fas fa-gem"></i> المواد البلورية</h2>
+                    <p>في المواد البلورية، تكون الجزيئات مرتبة في نمط منتظم ومتكرر يسمى الشبكة البلورية. هذا الترتيب المنتظم يعطي المواد البلورية أشكالاً هندسية جميلة مثل المكعبات أو المنشورات.</p>
+                    
+                    <div class="properties">
+                        <div class="property-card">
+                            <i class="fas fa-atom"></i>
+                            <h3>التركيب البلوري</h3>
+                            <p>ترتيب جزيئي منتظم ودوري في ثلاثة أبعاد</p>
+                        </div>
+                        <div class="property-card">
+                            <i class="fas fa-ruler-combined"></i>
+                            <h3>الشكل الهندسي</h3>
+                            <p>أشكال بلورية مميزة بزوايا وأوجه محددة</p>
+                        </div>
+                        <div class="property-card">
+                            <i class="fas fa-thermometer-half"></i>
+                            <h3>درجة الانصهار</h3>
+                            <p>درجة انصهار محددة وثابتة بسبب الانتظام البلوري</p>
+                        </div>
+                        <div class="property-card">
+                            <i class="fas fa-cube"></i>
+                            <h3>الخواص</h3>
+                            <p>خواص فيزيائية متجانسة في جميع الاتجاهات</p>
+                        </div>
+                    </div>
+                    
+                    <h3><i class="fas fa-lightbulb"></i> هل تعلم؟</h3>
+                    <p>الألماس هو أقسى مادة طبيعية معروفة بسبب ترتيبه البلوري المكعب القوي. كل ذرة كربون في الألماس مرتبطة بأربع ذرات أخرى بشكل رباعي السطوح.</p>
+                `;
+            } else {
+                explanation.innerHTML = `
+                    <h2><i class="fas fa-glass-whiskey"></i> المواد غير البلورية</h2>
+                    <p>في المواد غير البلورية، تكون الجزيئات مرتبة بشكل عشوائي دون نمط منتظم. هذه المواد لا تملك أشكالاً هندسية محددة مثل المواد البلورية.</p>
+                    
+                    <div class="properties">
+                        <div class="property-card">
+                            <i class="fas fa-atom"></i>
+                            <h3>التركيب الجزيئي</h3>
+                            <p>ترتيب جزيئي عشوائي وغير منتظم</p>
+                        </div>
+                        <div class="property-card">
+                            <i class="fas fa-shapes"></i>
+                            <h3>الشكل الخارجي</h3>
+                            <p>لا يوجد شكل بلوري مميز، عادة ما تكون ملساء</p>
+                        </div>
+                        <div class="property-card">
+                            <i class="fas fa-thermometer-half"></i>
+                            <h3>درجة الانصهار</h3>
+                            <p>تتحول إلى سائل على مدى من درجات الحرارة</p>
+                        </div>
+                        <div class="property-card">
+                            <i class="fas fa-vial"></i>
+                            <h3>الخواص</h3>
+                            <p>خواص فيزيائية قد تختلف حسب الاتجاه</p>
+                        </div>
+                    </div>
+                    
+                    <h3><i class="fas fa-lightbulb"></i> هل تعلم؟</h3>
+                    <p>الزجاج هو مادة صلبة غير بلورية، رغم أنه قد يبدو سائلاً بسبب سطحه الأملس. في الواقع، الزجاج هو مادة صلبة ذات بنية جزيئية عشوائية تسمى "صلبة غير متبلورة".</p>
+                `;
+            }
+        }
+        
+        // رسم الجزيئات بناءً على الحالة الحالية
+        function drawParticles() {
+            const svg = document.getElementById('svg-container');
+            svg.innerHTML = '';
+            state.particles = [];
+            
+            const width = svg.clientWidth;
+            const height = svg.clientHeight;
+            const particleSize = 8 * state.zoom;
+            const spacing = 25 * state.zoom;
+            
+            if (state.currentTab === 'crystalline') {
+                // ترتيب بلوري منتظم (مكعب)
+                for (let x = spacing; x < width - spacing; x += spacing) {
+                    for (let y = spacing; y < height - spacing; y += spacing) {
+                        createParticle(x, y, particleSize, 'crystalline');
+                    }
+                }
+            } else {
+                // ترتيب غير بلوري (عشوائي)
+                const particlesCount = Math.floor((width * height) / (spacing * spacing * 0.6));
+                
+                for (let i = 0; i < particlesCount; i++) {
+                    const x = spacing + Math.random() * (width - 2 * spacing);
+                    const y = spacing + Math.random() * (height - 2 * spacing);
+                    createParticle(x, y, particleSize, 'amorphous');
+                }
+            }
+            
+            // إذا كان الاهتزاز مفعلًا، نبدأ به
+            if (state.vibrating) {
+                startVibration();
+            }
+            
+            // تطبيق تأثير الحرارة
+            updateTemperature(state.temperature);
+        }
+        
+        // إنشاء جزيء جديد
+        function createParticle(x, y, size, type) {
+            const svg = document.getElementById('svg-container');
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', size);
+            circle.setAttribute('fill', type === 'crystalline' ? '#e74c3c' : '#3498db');
+            circle.setAttribute('class', `particle ${type}`);
+            circle.setAttribute('data-original-x', x);
+            circle.setAttribute('data-original-y', y);
+            
+            svg.appendChild(circle);
+            
+            // حفظ معلومات الجزيء
+            state.particles.push({
+                element: circle,
+                originalX: x,
+                originalY: y,
+                type: type
+            });
+        }
+        
+        // تكبير العرض
+        function zoomIn() {
+            if (state.zoom < 2) {
+                state.zoom += 0.1;
+                updateZoom(state.zoom);
+                document.getElementById('zoom-slider').value = state.zoom;
+            }
+        }
+        
+        // تصغير العرض
+        function zoomOut() {
+            if (state.zoom > 0.5) {
+                state.zoom -= 0.1;
+                updateZoom(state.zoom);
+                document.getElementById('zoom-slider').value = state.zoom;
+            }
+        }
+        
+        // تحديث مستوى التكبير
+        function updateZoom(value) {
+            state.zoom = parseFloat(value);
+            drawParticles();
+        }
+        
+        // تبديل وضع الاهتزاز
+        function toggleVibration() {
+            state.vibrating = !state.vibrating;
+            const btn = document.getElementById('vibration-btn');
+            
+            if (state.vibrating) {
+                btn.innerHTML = '<i class="fas fa-vibration"></i> إيقاف الاهتزاز';
+                startVibration();
+            } else {
+                btn.innerHTML = '<i class="fas fa-vibration"></i> تشغيل الاهتزاز';
+                stopVibration();
+            }
+        }
+        
+        // تحديث قوة الاهتزاز
+        function updateVibration(value) {
+            state.vibrationStrength = parseFloat(value);
+        }
+        
+        // تبديل تأثير الحرارة
+        function toggleTemperature() {
+            const btn = document.getElementById('temp-btn');
+            const slider = document.getElementById('temp-slider');
+            
+            if (slider.value === '25') {
+                slider.value = '75';
+                btn.innerHTML = '<i class="fas fa-temperature-high"></i> تخفيض الحرارة';
+                updateTemperature(75);
+            } else {
+                slider.value = '25';
+                btn.innerHTML = '<i class="fas fa-temperature-low"></i> زيادة الحرارة';
+                updateTemperature(25);
+            }
+        }
+        
+        // تحديث تأثير الحرارة
+        function updateTemperature(value) {
+            state.temperature = parseInt(value);
+            document.getElementById('temp-slider').value = value;
+            
+            // تحديث لون الجزيئات حسب الحرارة
+            state.particles.forEach(particle => {
+                const hue = particle.type === 'crystalline' ? 5 : 200;
+                const saturation = 80;
+                const lightness = 50 - (state.temperature / 100 * 20);
+                particle.element.setAttribute('fill', `hsl(${hue}, ${saturation}%, ${lightness}%)`);
+            });
+            
+            // تحديث قوة الاهتزاز حسب الحرارة
+            if (state.vibrating) {
+                stopVibration();
+                startVibration();
+            }
+        }
+        
+        // بدء اهتزاز الجزيئات
+        function startVibration() {
+            stopVibration(); // نتأكد من إيقاف أي اهتزاز سابق
+            
+            // حساب قوة الاهتزاز بناء على الحرارة وقوة الاهتزاز المحددة
+            const baseVibration = state.vibrationStrength * (state.temperature / 50);
+            
+            state.vibrationInterval = setInterval(() => {
+                state.particles.forEach(particle => {
+                    const vibrationAmount = baseVibration * state.zoom;
+                    const newX = particle.originalX + (Math.random() * vibrationAmount - vibrationAmount/2);
+                    const newY = particle.originalY + (Math.random() * vibrationAmount - vibrationAmount/2);
+                    
+                    particle.element.setAttribute('cx', newX);
+                    particle.element.setAttribute('cy', newY);
+                });
+            }, 50);
+        }
+        
+        // إيقاف اهتزاز الجزيئات
+        function stopVibration() {
+            if (state.vibrationInterval) {
+                clearInterval(state.vibrationInterval);
+                state.vibrationInterval = null;
+                
+                // إعادة الجزيئات إلى مواقعها الأصلية
+                state.particles.forEach(particle => {
+                    particle.element.setAttribute('cx', particle.originalX);
+                    particle.element.setAttribute('cy', particle.originalY);
+                });
+            }
+        }
+        
+        // إعداد تأثير التحويم على الجزيئات
+        function setupParticleHover() {
+            const svg = document.getElementById('svg-container');
+            const infoBox = document.getElementById('particle-info');
+            
+            svg.addEventListener('mousemove', (e) => {
+                const rect = svg.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // البحث عن أقرب جزيء
+                let closestParticle = null;
+                let minDistance = Infinity;
+                
+                state.particles.forEach(particle => {
+                    const cx = parseFloat(particle.element.getAttribute('cx'));
+                    const cy = parseFloat(particle.element.getAttribute('cy'));
+                    const r = parseFloat(particle.element.getAttribute('r'));
+                    
+                    const distance = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+                    
+                    if (distance < r + 10 && distance < minDistance) {
+                        minDistance = distance;
+                        closestParticle = particle;
+                    }
+                });
+                
+                if (closestParticle) {
+                    const cx = parseFloat(closestParticle.element.getAttribute('cx'));
+                    const cy = parseFloat(closestParticle.element.getAttribute('cy'));
+                    
+                    infoBox.style.display = 'block';
+                    infoBox.style.left = `${cx + 20}px`;
+                    infoBox.style.top = `${cy - 20}px`;
+                    
+                    infoBox.innerHTML = `
+                        <strong>${closestParticle.type === 'crystalline' ? 'جزيء بلوري' : 'جزيء غير بلوري'}</strong><br>
+                        الموقع: (${Math.round(cx)}, ${Math.round(cy)})<br>
+                        الحرارة: ${state.temperature}°C<br>
+                        ${closestParticle.type === 'crystalline' ? 
+                            'ترتيب منتظم في الشبكة البلورية' : 
+                            'ترتيب عشوائي غير منتظم'}
+                    `;
+                } else {
+                    infoBox.style.display = 'none';
+                }
+            });
+            
+            svg.addEventListener('mouseout', () => {
+                infoBox.style.display = 'none';
+            });
+        }
+        
+        // عرض اختبار الفهم
+        function showQuiz() {
+            document.getElementById('quiz-container').style.display = 'block';
+            loadQuestion();
+        }
+        
+        // تحميل سؤال الاختبار
+        function loadQuestion() {
+            if (state.currentQuestion >= state.quizQuestions.length) {
+                state.currentQuestion = 0;
+            }
+            
+            const question = state.quizQuestions[state.currentQuestion];
+            document.getElementById('quiz-question').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'quiz-option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectOption(index);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            document.getElementById('quiz-feedback').textContent = '';
+            document.getElementById('next-btn').style.display = 'none';
+            state.selectedOption = null;
+        }
+        
+        // اختيار إجابة في الاختبار
+        function selectOption(index) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(option => option.classList.remove('selected'));
+            options[index].classList.add('selected');
+            state.selectedOption = index;
+        }
+        
+        // التحقق من الإجابة
+        function checkAnswer() {
+            if (state.selectedOption === null) return;
+            
+            const question = state.quizQuestions[state.currentQuestion];
+            const feedback = document.getElementById('quiz-feedback');
+            
+            if (state.selectedOption === question.answer) {
+                feedback.textContent = 'إجابة صحيحة! ' + question.feedback;
+                feedback.style.color = 'green';
+            } else {
+                feedback.textContent = 'إجابة خاطئة. ' + question.feedback;
+                feedback.style.color = 'red';
+            }
+            
+            document.getElementById('next-btn').style.display = 'inline-block';
+        }
+        
+        // الانتقال إلى السؤال التالي
+        function nextQuestion() {
+            state.currentQuestion++;
+            loadQuestion();
+        }
+        
+        // إعادة تعيين المختبر
+        function resetLab() {
+            state.zoom = 1;
+            state.vibrating = false;
+            state.vibrationStrength = 2;
+            state.temperature = 25;
+            
+            document.getElementById('zoom-slider').value = 1;
+            document.getElementById('vibration-slider').value = 2;
+            document.getElementById('temp-slider').value = 25;
+            document.getElementById('vibration-btn').innerHTML = '<i class="fas fa-vibration"></i> تشغيل الاهتزاز';
+            document.getElementById('temp-btn').innerHTML = '<i class="fas fa-temperature-low"></i> زيادة الحرارة';
+            
+            stopVibration();
+            drawParticles();
+            
+            document.getElementById('quiz-container').style.display = 'none';
+            state.currentQuestion = 0;
+        }
+        
+        // تهيئة المحاكاة عند تحميل الصفحة
+        window.onload = initSimulation;
+    </script>
+</body>
+</html>

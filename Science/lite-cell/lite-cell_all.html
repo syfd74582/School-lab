@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>المختبر الافتراضي للخلية الكهربائية</title>
+    <style>
+        :root {
+            --anode-color: rgba(244, 67, 54, 0.7);
+            --cathode-color: rgba(33, 150, 243, 0.7);
+            --electrolyte-color: rgba(76, 175, 80, 0.5);
+            --wire-color: #000000; /* تغيير لون الأسلاك إلى أسود */
+            --electron-color: #FFEB3B;
+            --ion-positive: rgba(255, 152, 0, 0.7);
+            --ion-negative: rgba(156, 39, 176, 0.7);
+            --light-on: #FFD700;
+            --light-off: #9E9E9E;
+            --solution-color: rgba(66, 165, 245, 0.7);
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #sidebar {
+            width: 120px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        #sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ecf0f1;
+        }
+        
+        .tool {
+            width: 100px;
+            height: 100px;
+            margin: 10px auto;
+            cursor: grab;
+            background-color: transparent;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            box-sizing: border-box;
+            user-select: none;
+            position: relative;
+            transition: transform 0.2s;
+            touch-action: none;
+        }
+        
+        .tool:active {
+            transform: scale(0.95);
+        }
+        
+        .tool img {
+            max-width: 100%;
+            max-height: 100%;
+            background-color: transparent;
+            pointer-events: none;
+        }
+        
+        .tool-name {
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            color: #ecf0f1;
+            pointer-events: none;
+        }
+        
+        #workspace {
+            flex-grow: 1;
+            background-color: #ecf0f1;
+            position: relative;
+            overflow: hidden;
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px),
+                              linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            touch-action: none;
+        }
+
+        .explanation-box {
+    position: absolute;
+    top: 50px; /* تعديل الموضع حسب الحاجة */
+    left: 20px; /* تغيير من right إلى left */
+    background-color: rgba(255,255,255,0.95);
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 50;
+    font-size: 14px;
+    max-width: 250px;
+    border-left: 5px solid #27ae60; /* تغيير من border-right إلى border-left */
+}
+        
+        .lab-item {
+            position: absolute;
+            user-select: none;
+            cursor: move;
+            background-color: transparent;
+            transition: transform 0.2s;
+            width: 120px;
+            height: 120px;
+            touch-action: none;
+        }
+        
+        .lab-item:active {
+            transform: scale(1.05);
+            z-index: 100;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background-color: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+            touch-action: manipulation;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            min-width: 100px;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+        }
+        
+        #stop-btn {
+            background-color: #f39c12;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #stop-btn:hover {
+            background-color: #d35400;
+        }
+        
+        #message-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 80%;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            border-left: 5px solid #3498db;
+        }
+        
+        .electron {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--electron-color);
+            border-radius: 50%;
+            z-index: 10;
+            box-shadow: 0 0 5px var(--electron-color);
+        }
+        
+        .ion {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 10px;
+            color: white;
+            z-index: 5;
+        }
+        
+        .positive-ion {
+            background-color: var(--ion-positive);
+        }
+        
+        .negative-ion {
+            background-color: var(--ion-negative);
+        }
+        
+        
+
+
+        .wire-container {
+            position: absolute;
+            cursor: pointer;
+            z-index: 5;
+            overflow: visible;
+        }
+        
+        .wire-body {
+            stroke: #555;
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        .wire-end {
+            fill: #555;
+            stroke: #555;
+            stroke-width: 1;
+            cursor: move;
+            transition: all 0.3s;
+        }
+        
+        .wire-end.connected {
+            fill: var(--connection-color);
+            stroke: var(--connection-color);
+            filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.7));
+        }
+        
+        .wire-control {
+            fill: #777;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+        
+        .wire-control:hover {
+            opacity: 1;
+            fill: #3498db;
+        }
+
+        
+        .electron-flow {
+            stroke: var(--electron-color);
+            stroke-width: 4;
+            stroke-dasharray: 5, 3;
+            animation: electronFlow 1s linear infinite;
+            fill: none;
+        }
+        
+        @keyframes electronFlow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 20; }
+        }
+        
+        .container-content {
+            position: absolute;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            justify-content: flex-end;
+            width: 80%;
+            height: 80%;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: 0 0 40% 40%;
+            bottom: 5px;
+            left: 10%;
+        }
+        
+        .solution-layer {
+            width: 100%;
+            height: 100%;
+            background-color: var(--solution-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .anode {
+            position: absolute;
+            width: 20px;
+            height: 80px;
+           
+            left: 15px;
+            bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .cathode {
+            position: absolute;
+            width: 20px;
+            height: 80px;
+            right: 15px;
+            bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .light-bulb {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+           
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-size: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .light-bulb.on {
+           background-color: var(--light-on);
+            box-shadow: 0 0 30px var(--light-on), 0 0 60px var(--light-on);
+            color: #000;
+            animation: bulbGlow 0.5s infinite alternate;
+        }
+        
+        @keyframes bulbGlow {
+            0% { box-shadow: 0 0 10px var(--light-on); }
+            100% { box-shadow: 0 0 30px var(--light-on); }
+        }
+        
+      
+        .battery-tool {
+    display: flex;              /* استخدام flexbox لتوزيع العناصر */
+    align-items: center;       /* محاذاة المحتوى عموديًا في المنتصف */
+    border: 1px solid #ccc;    /* إضافة إطار (اختياري) */
+    padding: 10px;             /* إضافة مسافة داخلية */
+    border-radius: 5px;        /* زوايا دائرية (اختياري) */
+    cursor: grab;              /* تغيير المؤشر عند السحب */
+}
+
+.battery-tool img {
+    width: 60px;  
+    
+    /* عرض الصورة (يمكنك تعديله حسب الحاجة) */
+    height: auto;              /* الحفاظ على نسبة العرض إلى الارتفاع */
+    margin-right: 10px;        /* إضافة مسافة بين الصورة واسم الأداة */
+    
+}
+        
+        .connection-point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--wire-color);
+            z-index: 20;
+            cursor: pointer;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+            top: 15px;
+            right: 15px;
+            touch-action: manipulation;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: none;
+            transform: translateY(5px);
+            opacity: 0;
+            transition: all 0.2s;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .equation-box {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 16px;
+            text-align: center;
+            max-width: 250px;
+            border-right: 5px solid #2ecc71;
+        }
+        
+        .instructions-box {
+            position: absolute;
+            top: 200px;
+            right: 20px;
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 14px;
+            max-width: 250px;
+            border-right: 5px solid #3498db;
+        }
+        
+        .instructions-box h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .instructions-box ol {
+            padding-right: 20px;
+            text-align: right;
+        }
+        
+        .instructions-box li {
+            margin-bottom: 8px;
+        }
+        
+        .equation {
+            font-weight: bold;
+            margin: 10px 0;
+            direction: ltr;
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 80px;
+            }
+            
+            .tool {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .tool-name {
+                font-size: 10px;
+            }
+            
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+            
+            .equation-box, .instructions-box {
+                font-size: 14px;
+                max-width: 200px;
+            }
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div id="sidebar">
+            <h3>أدوات المختبر</h3>
+            <div class="tool" draggable="true" data-type="container" title="اسحبني إلى مساحة العمل">
+                <img src="./chemix (11).png" alt="حاوية">
+                <div class="tool-name">حاوية</div>
+            </div>
+            <div class="tool" draggable="true" data-type="anode" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSIyMCIgeT0iMTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4MCIgZmlsbD0iI2Y0NDMzNiIgZmlsbC1vcGFjaXR5PSIwLjciLz48dGV4dCB4PSIzMCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiPis8L3RleHQ+PC9zdmc+" alt="مصعد">
+                <div class="tool-name">مصعد (+)</div>
+            </div>
+            <div class="tool" draggable="true" data-type="cathode" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSI2MCIgeT0iMTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4MCIgZmlsbD0iIzIxOTZmMyIgZmlsbC1vcGFjaXR5PSIwLjciLz48dGV4dCB4PSI3MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiPi08L3RleHQ+PC9zdmc+" alt="مهبط">
+                <div class="tool-name">مهبط (-)</div>
+            </div>
+            <div class="tool" draggable="true" data-type="light" title="اسحبني إلى مساحة العمل">
+                <img src="./chemix (9).png" alt="مصباح">
+                <div class="tool-name">مصباح</div>
+            </div>
+            <div class="tool battery-tool" draggable="true" data-type="battery" title="اسحبني إلى مساحة العمل">
+                <img src="./battery-vector-7.jpg" alt="بطارية">
+                <div class="tool-name">بطارية</div>
+            </div>
+            <div class="tool" draggable="true" data-type="wire" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNMjAgNTBjMC0xMCAxMC0yMCAyMC0yMHMxMCAxMCAxMCAyMGMwIDEwLTEwIDIwLTIwIDIwUzIwIDYwIDIwIDUweiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMzAgNTBoNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTcwIDUwYzAgMTAtMTAgMjAtMjAgMjBzLTEwLTEwLTEwLTIwYzAtMTAgMTAtMjAgMjAtMjBzMTAgMTAgMTAgMjB6IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iNCIvPjxjaXJjbGUgY3g9IjIwIiBjeT0iNTAiIHI9IjgiIGZpbGw9IiMwMDAiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjUwIiByPSI4IiBmaWxsPSIjMDAwIi8+PC9zdmc+" alt="سلك توصيل">
+                <div class="tool-name">سلك توصيل</div>
+            </div>
+        </div>
+        
+        <div id="workspace">
+            <div id="message-box"></div>
+            <div class="explanation-box">
+    <h3>شرح التجربة</h3>
+    <p>
+        في هذه التجربة، نقوم بمحاكاة عمل خلية كهربائية بسيطة. تتكون الخلية من مصعد (قطب موجب) مصنوع من الزنك، ومهبط (قطب سالب) مصنوع من النحاس، ومحلول كبريتات النحاس كإلكتروليت.
+    </p>
+    <p>
+        عند توصيل الدائرة، يبدأ الزنك في التأكسد، حيث يفقد إلكترونين ويتحول إلى أيونات الزنك (Zn²⁺) التي تذوب في المحلول. هذه الإلكترونات تتدفق عبر الدائرة الخارجية إلى المهبط.
+    </p>
+    <p>
+        في المهبط، تتلقى أيونات النحاس (Cu²⁺) الموجودة في المحلول هذه الإلكترونات وتختزل إلى ذرات النحاس (Cu) التي تترسب على سطح المهبط. هذا التدفق المستمر للإلكترونات يولد تيارًا كهربائيًا يمكن استخدامه لتشغيل مصباح أو أي جهاز آخر.
+    </p>
+    <p>
+        المعادلات الكيميائية للتفاعلات هي:
+        <ul>
+            <li>Zn → Zn²⁺ + 2e⁻ (أكسدة عند المصعد)</li>
+            <li>Cu²⁺ + 2e⁻ → Cu (اختزال عند المهبط)</li>
+            <li>Zn + Cu²⁺ → Zn²⁺ + Cu (تفاعل الخلية الكلي)</li>
+        </ul>
+    </p>
+</div>
+
+            
+            <div id="controls">
+                <button id="add-electrolyte-btn" class="control-btn">إضافة محلول</button>
+                <button id="simulate-btn" class="control-btn">بدء المحاكاة</button>
+                <button id="stop-btn" class="control-btn" disabled>إيقاف المحاكاة</button>
+                <button id="reset-btn" class="control-btn">إعادة الضبط</button>
+            </div>
+            
+            <div class="equation-box">
+                <h3>المعادلات الكيميائية</h3>
+                <div class="equation">Zn → Zn²⁺ + 2e⁻ (أكسدة عند المصعد)</div>
+                <div class="equation">Cu²⁺ + 2e⁻ → Cu (اختزال عند المهبط)</div>
+                <div class="equation">Zn + Cu²⁺ → Zn²⁺ + Cu (تفاعل الخلية الكلي)</div>
+            </div>
+            
+            <div class="instructions-box">
+                <h3>تعليمات التجربة</h3>
+                <ol>
+                    <li>اسحب الأدوات إلى مساحة العمل</li>
+                    <li>أضف المحلول الكهربائي</li>
+                    <li>صل الأسلاك بين المكونات</li>
+                    <li>اضغط "بدء المحاكاة"</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const workspace = document.getElementById('workspace');
+            const tools = document.querySelectorAll('.tool');
+            const messageBox = document.getElementById('message-box');
+            const tooltip = document.getElementById('tooltip');
+            
+            let draggedItem = null;
+            let offsetX, offsetY;
+            let items = {
+                container: null,
+                anode: null,
+                cathode: null,
+                light: null,
+                battery: null,
+                wires: []
+            };
+            
+            let containerContents = [];
+            let isSimulating = false;
+            let activeWire = null;
+            let wireStartPoint = null;
+            let simulationInterval = null;
+            
+            // إعداد أدوات السحب والإفلات
+            tools.forEach(tool => {
+                tool.addEventListener('dragstart', function(e) {
+                    draggedItem = this.cloneNode(true);
+                    draggedItem.classList.add('lab-item');
+                    draggedItem.style.position = 'absolute';
+                    
+                    const rect = this.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    
+                    e.dataTransfer.setData('text/plain', '');
+                    this.style.opacity = '0.4';
+                });
+                
+                tool.addEventListener('touchstart', handleTouchStart, { passive: false });
+                
+                // إضافة تلميحات
+                tool.addEventListener('mouseenter', showTooltip);
+                tool.addEventListener('mouseleave', hideTooltip);
+                tool.addEventListener('touchstart', function(e) {
+                    showTooltip(e);
+                    setTimeout(hideTooltip, 2000);
+                }, { passive: false });
+            });
+            
+            function showTooltip(e) {
+                const tool = e.currentTarget;
+                const title = tool.getAttribute('title');
+                if (!title) return;
+                
+                const rect = tool.getBoundingClientRect();
+                tooltip.textContent = title;
+                tooltip.style.left = `${rect.left + rect.width/2}px`;
+                tooltip.style.top = `${rect.top - 30}px`;
+                tooltip.classList.add('show');
+            }
+            
+            function hideTooltip() {
+                tooltip.classList.remove('show');
+            }
+            
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = e.target.closest('.tool');
+                
+                if (!target) return;
+                
+                draggedItem = target.cloneNode(true);
+                draggedItem.classList.add('lab-item');
+                draggedItem.style.position = 'absolute';
+                
+                const rect = target.getBoundingClientRect();
+                offsetX = touch.clientX - rect.left;
+                offsetY = touch.clientY - rect.top;
+                
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+                workspace.appendChild(draggedItem);
+                
+                const type = draggedItem.getAttribute('data-type');
+                const id = `item-${Date.now()}`;
+                draggedItem.setAttribute('data-id', id);
+                
+                if (type === 'wire') {
+                    createWire(draggedItem, x, y);
+                } else {
+                    if (type === 'container') {
+                        items.container = { id, element: draggedItem };
+                        addContainerContent(draggedItem);
+                        
+                    }
+                    else if (type === 'anode') {
+                        items.anode = { id, element: draggedItem };
+                        addAnodeElement(draggedItem);
+                        
+                    }
+                    else if (type === 'cathode') {
+                        items.cathode = { id, element: draggedItem };
+                        addCathodeElement(draggedItem);
+                       
+                    }
+                    else if (type === 'light') {
+                        items.light = { id, element: draggedItem };
+                        addLightElement(draggedItem);
+                        
+                    }
+                    else if (type === 'battery') {
+                        items.battery = { id, element: draggedItem };
+                        addBatteryElement(draggedItem);
+                        
+                    }
+                }
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+                target.style.opacity = '0.4';
+            }
+            
+            function handleTouchMove(e) {
+                if (!draggedItem) return;
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+                
+                if (draggedItem.getAttribute('data-type') === 'wire') {
+                    updateWirePosition(draggedItem, x, y);
+                }
+            }
+            
+            function handleTouchEnd() {
+                if (!draggedItem) return;
+                
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+                
+                const tool = document.querySelector('.tool[data-type="' + draggedItem.getAttribute('data-type') + '"]');
+                if (tool) tool.style.opacity = '1';
+                
+                if (draggedItem.getAttribute('data-type') === 'wire') {
+                    finalizeWireCreation(draggedItem);
+                } else {
+                    setupDraggable(draggedItem);
+                }
+                
+                draggedItem = null;
+            }
+            
+            workspace.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            workspace.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                if (draggedItem) {
+                    const x = e.clientX - offsetX - workspace.getBoundingClientRect().left;
+                    const y = e.clientY - offsetY - workspace.getBoundingClientRect().top;
+                    
+                    draggedItem.style.left = `${x}px`;
+                    draggedItem.style.top = `${y}px`;
+                    workspace.appendChild(draggedItem);
+                    
+                    const type = draggedItem.getAttribute('data-type');
+                    const id = `item-${Date.now()}`;
+                    draggedItem.setAttribute('data-id', id);
+                    
+                    if (type === 'wire') {
+                        createWire(draggedItem, x, y);
+                    } else {
+                        if (type === 'container') {
+                            items.container = { id, element: draggedItem };
+                            addContainerContent(draggedItem);
+                         
+                        }
+                        else if (type === 'anode') {
+                            items.anode = { id, element: draggedItem };
+                            addAnodeElement(draggedItem);
+                         
+                        }
+                        else if (type === 'cathode') {
+                            items.cathode = { id, element: draggedItem };
+                            addCathodeElement(draggedItem);
+                       
+                        }
+                        else if (type === 'light') {
+                            items.light = { id, element: draggedItem };
+                            addLightElement(draggedItem);
+                           
+                        }
+                        else if (type === 'battery') {
+                            items.battery = { id, element: draggedItem };
+                            addBatteryElement(draggedItem);
+                           
+                        }
+                    }
+                    
+                    const tool = document.querySelector('.tool[data-type="' + type + '"]');
+                    if (tool) tool.style.opacity = '1';
+                    
+                    setupDraggable(draggedItem);
+                    draggedItem = null;
+                }
+            });
+            
+            function addContainerContent(element) {
+                const container = document.createElement('div');
+                container.className = 'container-content';
+                element.appendChild(container);
+            }
+            
+            function addAnodeElement(element) {
+                const anode = document.createElement('div');
+                anode.className = 'anode';
+                anode.textContent = '+';
+                element.appendChild(anode);
+            }
+            
+            function addCathodeElement(element) {
+                const cathode = document.createElement('div');
+                cathode.className = 'cathode';
+                cathode.textContent = '-';
+                element.appendChild(cathode);
+            }
+            
+            function addLightElement(element) {
+                const light = document.createElement('div');
+                light.className = 'light-bulb';
+                light.textContent = '⚡';
+                element.appendChild(light);
+            }
+            
+            function addBatteryElement(element) {
+                const battery = document.createElement('div');
+                battery.className = 'battery';
+                
+                const top = document.createElement('div');
+                top.className = 'battery-top';
+                
+                const plus = document.createElement('div');
+                plus.className = 'battery-plus';
+                plus.textContent = '';
+                
+                const minus = document.createElement('div');
+                minus.className = 'battery-minus';
+                minus.textContent = '';
+                
+                battery.appendChild(top);
+                battery.appendChild(plus);
+                battery.appendChild(minus);
+                element.appendChild(battery);
+            }
+            
+            function addConnectionPoint(element) {
+                const point = document.createElement('div');
+                point.className = 'connection-point';
+                element.appendChild(point);
+            }
+            
+            function createWire(wireElement, x, y) {
+                const wireContainer = document.createElement('div');
+                wireContainer.className = 'wire-container';
+                wireContainer.style.left = `${x}px`;
+                wireContainer.style.top = `${y}px`;
+                wireContainer.setAttribute('data-id', wireElement.getAttribute('data-id'));
+                
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute('width', '200');
+                svg.setAttribute('height', '200');
+                svg.setAttribute('viewBox', '0 0 200 200');
+                svg.style.touchAction = 'none';
+                
+                const startControl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                startControl.setAttribute('cx', '30');
+                startControl.setAttribute('cy', '50');
+                startControl.setAttribute('r', '15');
+                startControl.setAttribute('class', 'wire-control');
+                startControl.setAttribute('data-end', 'start');
+                
+                const endControl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                endControl.setAttribute('cx', '170');
+                endControl.setAttribute('cy', '50');
+                endControl.setAttribute('r', '15');
+                endControl.setAttribute('class', 'wire-control');
+                endControl.setAttribute('data-end', 'end');
+                
+                const wireBody = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                wireBody.setAttribute('d', 'M30,50 Q100,50 170,50');
+                wireBody.setAttribute('class', 'wire');
+                
+                const startEnd = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                startEnd.setAttribute('cx', '30');
+                startEnd.setAttribute('cy', '50');
+                startEnd.setAttribute('r', '8');
+                startEnd.setAttribute('class', 'wire-end');
+                startEnd.setAttribute('data-end', 'start');
+                
+                const endEnd = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                endEnd.setAttribute('cx', '170');
+                endEnd.setAttribute('cy', '50');
+                endEnd.setAttribute('r', '8');
+                endEnd.setAttribute('class', 'wire-end');
+                endEnd.setAttribute('data-end', 'end');
+                
+                svg.appendChild(wireBody);
+                svg.appendChild(startEnd);
+                svg.appendChild(endEnd);
+                svg.appendChild(startControl);
+                svg.appendChild(endControl);
+                
+                wireContainer.appendChild(svg);
+                workspace.appendChild(wireContainer);
+                
+                setupWireControls(wireContainer);
+                wireElement.remove();
+                
+                items.wires.push({
+                    id: wireContainer.getAttribute('data-id'),
+                    element: wireContainer,
+                    connectedTo: { start: null, end: null },
+                    startConnected: false,
+                    endConnected: false
+                });
+                
+                setupDraggable(wireContainer);
+            }
+            
+            function setupWireControls(wireContainer) {
+                const svg = wireContainer.querySelector('svg');
+                const controls = svg.querySelectorAll('.wire-control, .wire-end');
+                
+                controls.forEach(control => {
+                    control.addEventListener('mousedown', startWireAdjust);
+                    control.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        startWireAdjust(e);
+                    }, { passive: false });
+                });
+                
+                const ends = svg.querySelectorAll('.wire-end');
+                ends.forEach(end => {
+                    end.addEventListener('mouseup', connectToComponent);
+                    end.addEventListener('touchend', function(e) {
+                        e.preventDefault();
+                        connectToComponent(e);
+                    }, { passive: false });
+                });
+            }
+            
+            function startWireAdjust(e) {
+                e.stopPropagation();
+                const isTouch = e.type === 'touchstart';
+                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+                
+                activeWire = e.target.closest('.wire-container');
+                const end = e.target.getAttribute('data-end');
+                
+                wireStartPoint = {
+                    x: clientX,
+                    y: clientY,
+                    end: end,
+                    cx: parseFloat(e.target.getAttribute('cx')),
+                    cy: parseFloat(e.target.getAttribute('cy'))
+                };
+                
+                document.addEventListener('mousemove', adjustWire);
+                document.addEventListener('touchmove', adjustWire, { passive: false });
+                document.addEventListener('mouseup', stopWireAdjust);
+                document.addEventListener('touchend', stopWireAdjust);
+            }
+            
+            function adjustWire(e) {
+                if (!activeWire || !wireStartPoint) return;
+                e.preventDefault();
+                
+                const isTouch = e.type === 'touchmove';
+                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+                
+                const dx = (clientX - wireStartPoint.x) / 2;
+                const dy = (clientY - wireStartPoint.y) / 2;
+
+    
+                
+                const svg = activeWire.querySelector('svg');
+                const control = svg.querySelector(`.wire-control[data-end="${wireStartPoint.end}"]`);
+                const end = svg.querySelector(`.wire-end[data-end="${wireStartPoint.end}"]`);
+                
+                const newX = wireStartPoint.cx + dx;
+                const newY = wireStartPoint.cy + dy;
+                
+                control.setAttribute('cx', newX);
+                control.setAttribute('cy', newY);
+                end.setAttribute('cx', newX);
+                end.setAttribute('cy', newY);
+                
+                updateWirePath(activeWire);
+            }
+            
+            function updateWirePath(wireContainer) {
+                const svg = wireContainer.querySelector('svg');
+                const path = svg.querySelector('.wire');
+                const startControl = svg.querySelector('.wire-control[data-end="start"]');
+                const endControl = svg.querySelector('.wire-control[data-end="end"]');
+                
+                const x1 = parseFloat(startControl.getAttribute('cx'));
+                const y1 = parseFloat(startControl.getAttribute('cy'));
+                const x2 = parseFloat(endControl.getAttribute('cx'));
+                const y2 = parseFloat(endControl.getAttribute('cy'));
+                
+                const midX = (x1 + x2) / 2;
+                let midY = (y1 + y2) / 2;
+                
+                const yDiff = y2 - y1;
+                midY += yDiff * 0.5;
+                
+                path.setAttribute('d', `M${x1},${y1} Q${midX},${midY} ${x2},${y2}`);
+            }
+            
+            function connectToComponent(e) {
+                const isTouch = e.type === 'touchend';
+                const clientX = isTouch ? e.changedTouches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.changedTouches[0].clientY : e.clientY;
+                
+                const endElement = e.target;
+                const wireContainer = endElement.closest('.wire-container');
+                const endType = endElement.getAttribute('data-end');
+                
+                // البحث عن أقرب نقطة توصيل
+                const connectionPoints = document.querySelectorAll('.connection-point');
+                let closestPoint = null;
+                let minDistance = Infinity;
+                
+                connectionPoints.forEach(point => {
+                    const pointRect = point.getBoundingClientRect();
+                    const pointX = pointRect.left + pointRect.width / 2;
+                    const pointY = pointRect.top + pointRect.height / 2;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(clientX - pointX, 2) + 
+                        Math.pow(clientY - pointY, 2)
+                    );
+                    
+                    if (distance < minDistance && distance < 40) {
+                        minDistance = distance;
+                        closestPoint = point;
+                    }
+                });
+                
+                if (closestPoint) {
+                    const component = closestPoint.parentElement;
+                    const componentRect = component.getBoundingClientRect();
+                    const wireRect = wireContainer.getBoundingClientRect();
+                    
+                    const x = componentRect.left + closestPoint.offsetLeft + closestPoint.offsetWidth/2 - wireRect.left;
+                    const y = componentRect.top + closestPoint.offsetTop + closestPoint.offsetHeight/2 - wireRect.top;
+                    
+                    const svg = wireContainer.querySelector('svg');
+                    const control = svg.querySelector(`.wire-control[data-end="${endType}"]`);
+                    const end = svg.querySelector(`.wire-end[data-end="${endType}"]`);
+                    
+                    control.setAttribute('cx', x);
+                    control.setAttribute('cy', y);
+                    end.setAttribute('cx', x);
+                    end.setAttribute('cy', y);
+                    end.classList.add('connected');
+                    
+                    updateWirePath(wireContainer);
+                    
+                    const wireId = wireContainer.getAttribute('data-id');
+                    const componentId = component.getAttribute('data-id');
+                    
+                    const wireIndex = items.wires.findIndex(w => w.id === wireId);
+                    if (wireIndex !== -1) {
+                        items.wires[wireIndex].connectedTo[endType] = componentId;
+                        items.wires[wireIndex][`${endType}Connected`] = true;
+                    }
+                    
+                    showMessage('تم التوصيل بنجاح');
+                }
+            }
+            
+            function stopWireAdjust() {
+                document.removeEventListener('mousemove', adjustWire);
+                document.removeEventListener('touchmove', adjustWire);
+                document.removeEventListener('mouseup', stopWireAdjust);
+                document.removeEventListener('touchend', stopWireAdjust);
+                
+                activeWire = null;
+                wireStartPoint = null;
+            }
+            
+            function setupDraggable(element) {
+                let isDragging = false;
+                let startX, startY, startLeft, startTop;
+                
+                element.addEventListener('mousedown', startDrag);
+                element.addEventListener('touchstart', startDragTouch, { passive: false });
+                
+                function startDrag(e) {
+                    if (isSimulating || e.target.classList.contains('wire-control') || e.target.classList.contains('wire-end') || e.target.classList.contains('connection-point')) return;
+                    e.stopPropagation();
+                    
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', stopDrag);
+                }
+                
+                function startDragTouch(e) {
+                    if (isSimulating || e.target.classList.contains('wire-control') || e.target.classList.contains('wire-end') || e.target.classList.contains('connection-point')) return;
+                    e.preventDefault();
+                    
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('touchmove', dragTouch, { passive: false });
+                    document.addEventListener('touchend', stopDrag);
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function dragTouch(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    const touch = e.touches[0];
+                    const dx = touch.clientX - startX;
+                    const dy = touch.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function stopDrag() {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                    element.style.zIndex = '1';
+                    
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('touchmove', dragTouch);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchend', stopDrag);
+                }
+            }
+            
+            document.getElementById('add-electrolyte-btn').addEventListener('click', function() {
+                if (!items.container) {
+                    showMessage('الرجاء وضع الحاوية أولاً');
+                    return;
+                }
+                
+                if (containerContents.includes('electrolyte')) {
+                    showMessage('تمت إضافة المحلول الكهربائي بالفعل');
+                    return;
+                }
+                
+                containerContents.push('electrolyte');
+                
+                // إضافة طبقة المحلول إلى الحاوية
+                const container = items.container.element.querySelector('.container-content');
+                container.innerHTML = '';
+                
+                const solutionLayer = document.createElement('div');
+                solutionLayer.className = 'solution-layer';
+                solutionLayer.textContent = 'CuSO₄';
+                container.appendChild(solutionLayer);
+                
+                showMessage('تمت إضافة محلول كبريتات النحاس (CuSO₄) إلى الحاوية');
+            });
+            
+            document.getElementById('simulate-btn').addEventListener('click', function() {
+                if (isSimulating) return;
+                
+                // التحقق من صحة الإعداد
+                if (!items.container) {
+                    showMessage('الرجاء وضع الحاوية أولاً');
+                    return;
+                }
+                
+                if (!items.anode) {
+                    showMessage('الرجاء وضع المصعد أولاً');
+                    return;
+                }
+                
+                if (!items.cathode) {
+                    showMessage('الرجاء وضع المهبط أولاً');
+                    return;
+                }
+                
+                if (!items.light) {
+                    showMessage('الرجاء وضع المصباح أولاً');
+                    return;
+                }
+                
+                if (!items.battery) {
+                    showMessage('الرجاء وضع البطارية أولاً');
+                    return;
+                }
+                
+                if (items.wires.length < 3) {
+                    showMessage('الرجاء وضع 3 أسلاك على الأقل');
+                    return;
+                }
+                
+                if (!containerContents.includes('electrolyte')) {
+                    showMessage('الرجاء إضافة المحلول الكهربائي إلى الحاوية');
+                    return;
+                }
+                
+                // التحقق من التوصيلات الصحيحة
+                
+                
+                // بدء المحاكاة
+                isSimulating = true;
+                showMessage('جارٍ تشغيل الخلية الكهربائية...');
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = true;
+                document.getElementById('stop-btn').disabled = false;
+
+
+                setTimeout(function(){
+                    const light=items.light.element.querySelector('.light-bulb');
+                    light.classList.add('on');
+                }, 4000);
+                
+
+
+                // إضاءة المصباح
+                
+                
+                // إضافة الأيونات إلى المحلول
+                const electrolyte = items.container.element.querySelector('.container-content');
+                for (let i = 0; i < 10; i++) {
+                    createIon(electrolyte, 'Cu²⁺', 'positive-ion', 'var(--ion-positive)');
+                    createIon(electrolyte, 'SO₄²⁻', 'negative-ion', 'var(--ion-negative)');
+                }
+                
+                // بدء حركة الإلكترونات والأيونات
+                simulationInterval = setInterval(() => {
+                    simulateElectronFlow();
+                }, 1000);
+            });
+            
+            function createIon(container, symbol, type, color) {
+                const ion = document.createElement('div');
+                ion.className = `ion ${type}`;
+                ion.textContent = symbol;
+                ion.style.left = `${Math.random() * 80 + 10}%`;
+                ion.style.bottom = `${Math.random() * 70 + 10}%`;
+                ion.style.backgroundColor = color;
+                container.appendChild(ion);
+                
+                // حركة عشوائية للأيونات
+                setInterval(() => {
+                    const currentLeft = parseFloat(ion.style.left);
+                    const currentBottom = parseFloat(ion.style.bottom);
+                    
+                    ion.style.left = `${Math.max(5, Math.min(85, currentLeft + (Math.random() * 4 - 2)))}%`;
+                    ion.style.bottom = `${Math.max(5, Math.min(75, currentBottom + (Math.random() * 4 - 2)))}%`;
+                }, 1000);
+            }
+            
+            function stopSimulation() {
+                clearInterval(simulationInterval);
+                
+                // إزالة جميع التأثيرات المرئية
+                document.querySelectorAll('.electron').forEach(el => el.remove());
+                document.querySelectorAll('.electron-flow').forEach(el => el.remove());
+                document.querySelectorAll('.ion').forEach(el => el.remove());
+                
+                // إطفاء المصباح
+                if (items.light) {
+                    const light = items.light.element.querySelector('.light-bulb');
+                    light.classList.remove('on');
+                }
+                
+                isSimulating = false;
+                document.getElementById('simulate-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                showMessage('تم إيقاف المحاكاة');
+            }
+            
+            document.getElementById('stop-btn').addEventListener('click', stopSimulation);
+            
+            function simulateElectronFlow() {
+    // حركة الإلكترونات في الأسلاك
+    items.wires.forEach(wire => {
+        const svg = wire.element.querySelector('svg');
+        const path = svg.querySelector('.wire');
+
+        if (!svg.querySelector('.electron-flow')) {
+            const electronPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            electronPath.setAttribute('d', path.getAttribute('d'));
+            electronPath.setAttribute('class', 'electron-flow');
+            svg.appendChild(electronPath);
+        }
+
+        // إنشاء إلكترونات مرئية
+        createElectron(wire.element);
+    });
+
+    // حركة الأيونات في المحلول وتفاعلات الأقطاب
+    if (items.container && items.anode && items.cathode) {
+        const electrolyte = items.container.element.querySelector('.container-content');
+
+        // حركة أيونات النحاس نحو المهبط وتفاعلها
+        const cuIons = electrolyte.querySelectorAll('.positive-ion');
+        cuIons.forEach(ion => {
+            if (ion.textContent === 'Cu²⁺') {
+                const currentBottom = parseFloat(ion.style.bottom);
+                ion.style.bottom = `${Math.min(75, currentBottom + 0.5)}%`; // تخفيض سرعة الحركة
+
+                // إذا وصلت الأيونات إلى المهبط
+                if (parseFloat(ion.style.bottom) >= 70) {
+                    ion.remove(); // إزالة الأيون بعد الوصول
+                }
+            }
+        });
+
+        // حركة أيونات الكبريتات نحو المصعد وتفاعلها
+        const so4Ions = electrolyte.querySelectorAll('.negative-ion');
+        so4Ions.forEach(ion => {
+            if (ion.textContent === 'SO₄²⁻') {
+                const currentBottom = parseFloat(ion.style.bottom);
+                ion.style.bottom = `${Math.max(5, currentBottom - 0.5)}%`; // تخفيض سرعة الحركة
+
+                // إذا وصلت الأيونات إلى المصعد
+                if (parseFloat(ion.style.bottom) <= 10) {
+                    ion.remove(); // إزالة الأيون بعد الوصول
+                }
+            }
+        });
+
+        // إضافة أيونات جديدة باستمرار للمحافظة على التفاعل (تقليل الكمية)
+        if (Math.random() > 0.9) { // تقليل معدل إضافة الأيونات
+            createIon(electrolyte, 'Cu²⁺', 'positive-ion', 'var(--ion-positive)');
+            createIon(electrolyte, 'SO₄²⁻', 'negative-ion', 'var(--ion-negative)');
+        }
+
+        // تصاعد مستمر للأيونات من الأقطاب (بدون شرط عشوائي)
+        createBubble(items.cathode.element, 'Cu', 'brown', 1); // تصاعد من المهبط
+        createBubble(items.anode.element, 'Zn²⁺', 'gray', 1); // تصاعد من المصعد
+    }
+}
+
+// دالة لإنشاء فقاعات التفاعل على الأقطاب
+function createBubble(electrode, ionType, color, speed) {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.style.backgroundColor = color;
+    bubble.textContent = ionType;
+
+    electrode.appendChild(bubble);
+
+    const electrodeRect = electrode.getBoundingClientRect();
+    const bubbleSize = 10; // حجم الفقاعة
+    bubble.style.width = `${bubbleSize}px`;
+    bubble.style.height = `${bubbleSize}px`;
+    bubble.style.position = 'absolute';
+    bubble.style.left = `${electrodeRect.width / 2 - bubbleSize / 2}px`; // توسيط الفقاعة أفقيًا
+    bubble.style.bottom = '0px'; // بدء الفقاعة من الأسفل
+
+    let position = 0;
+    const animationInterval = setInterval(() => {
+        position += speed; // زيادة السرعة
+
+        bubble.style.bottom = `${position}px`;
+
+        // إزالة الفقاعة بعد الوصول إلى الأعلى
+        if (position > electrodeRect.height) {
+            bubble.remove();
+            clearInterval(animationInterval);
+        }
+    }, 20); // تعديل الفترة الزمنية لضمان السلاسة
+}
+
+
+// تعديل دالة createIon لتحسين ظهور الأيونات
+function createIon(container, symbol, type, color) {
+    const ion = document.createElement('div');
+    ion.className = `ion ${type}`;
+    ion.textContent = symbol;
+
+    // الحصول على أبعاد الحاوية
+    const containerWidth = container.offsetWidth;
+    const containerHeight = container.offsetHeight;
+
+    // تحديد نطاق عشوائي للأيونات داخل الحاوية
+    const ionLeft = Math.random() * (containerWidth * 0.8) + (containerWidth * 0.1); // ضمن 80% من عرض الحاوية مع هامش 10%
+    const ionBottom = Math.random() * (containerHeight * 0.7) + (containerHeight * 0.1); // ضمن 70% من ارتفاع الحاوية مع هامش 10%
+
+    ion.style.left = `${ionLeft}px`;
+    ion.style.bottom = `${ionBottom}px`;
+    ion.style.backgroundColor = color;
+    ion.style.zIndex = '5';
+    container.appendChild(ion);
+
+    // حركة عشوائية للأيونات
+    const moveIon = () => {
+        if (!isSimulating) return;
+
+        const currentLeft = parseFloat(ion.style.left);
+        const currentBottom = parseFloat(ion.style.bottom);
+
+        // تحديد نطاق الحركة العشوائية داخل الحاوية (تقليل المدى)
+        const moveRangeX = 1; // مدى الحركة الأفقية (أقل)
+        const moveRangeY = 1; // مدى الحركة الرأسية (أقل)
+
+        let newLeft = currentLeft + (Math.random() * moveRangeX * 2 - moveRangeX);
+        let newBottom = currentBottom + (Math.random() * moveRangeY * 2 - moveRangeY);
+
+        // التأكد من أن الأيونات لا تخرج عن حدود الحاوية
+        newLeft = Math.max(containerWidth * 0.1, Math.min(containerWidth * 0.9, newLeft));
+        newBottom = Math.max(containerHeight * 0.1, Math.min(containerHeight * 0.8, newBottom));
+
+        ion.style.left = `${newLeft}px`;
+        ion.style.bottom = `${newBottom}px`;
+
+        if (isSimulating) {
+            setTimeout(moveIon, 50); // زيادة التأخير الزمني (50ms)
+            //requestAnimationFrame(moveIon); // بديل لـ setTimeout
+        }
+    };
+
+    moveIon();
+}
+
+            function createElectron(wireElement) {
+                const svg = wireElement.querySelector('svg');
+                const path = svg.querySelector('.wire');
+                const pathLength = path.getTotalLength();
+                
+                const electron = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                electron.setAttribute('class', 'electron');
+                electron.setAttribute('r', '3');
+                
+                let progress = 0;
+                const speed = 0.02;
+                
+                function animate() {
+                    if (progress >= 1 || !isSimulating) {
+                        electron.remove();
+                        return;
+                    }
+                    
+                    progress += speed;
+                    const point = path.getPointAtLength(progress * pathLength);
+                    
+                    electron.setAttribute('cx', point.x);
+                    electron.setAttribute('cy', point.y);
+                    
+                    requestAnimationFrame(animate);
+                }
+                
+                svg.appendChild(electron);
+                animate();
+            }
+            
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                stopSimulation();
+                
+                // إزالة جميع العناصر
+                document.querySelectorAll('.lab-item').forEach(item => item.remove());
+                document.querySelectorAll('.wire-container').forEach(wire => wire.remove());
+                
+                // إعادة تعيين المتغيرات
+                items = {
+                    container: null,
+                    anode: null,
+                    cathode: null,
+                    light: null,
+                    battery: null,
+                    wires: []
+                };
+                
+                containerContents = [];
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = false;
+                
+                showMessage('تم إعادة ضبط التجربة');
+            });
+            
+            function showMessage(message) {
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

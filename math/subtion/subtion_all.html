@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعلم الطرح بطريقة تفاعلية</title>
+    <style>
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        #game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .math-equation {
+            font-size: 3em;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .objects-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .original-items {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 60%;
+            gap: 15px;
+        }
+        
+        .subtracted-items {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 30%;
+            background-color: #f1f1f1;
+            border-radius: 15px;
+            padding: 15px;
+            margin-right: 20px;
+            min-height: 150px;
+            align-content: flex-start;
+        }
+        
+        .item {
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        
+        .item.pen { color: #3498db; }
+        .item.book { color: #e74c3c; }
+        .item.apple { color: #2ecc71; }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .feedback {
+            font-size: 1.5em;
+            min-height: 60px;
+            margin: 25px 0;
+            padding: 15px;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+        
+        .correct {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            animation: pulse 0.5s;
+        }
+        
+        .incorrect {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .item-counter {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #f39c12;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        
+        .object-type-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .object-type-btn {
+            background: white;
+            border: 2px solid #3498db;
+            color: #3498db;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .object-type-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .explanation {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: right;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>تعلم الطرح بطريقة تفاعلية 🧮</h1>
+        <p>اسحب العناصر لترى كيف تتم عملية الطرح</p>
+        
+        <div class="math-equation" id="math-equation">
+            <span id="first-number">٥</span> - <span id="second-number">٢</span> = <span id="result">؟</span>
+        </div>
+        
+        <div class="object-type-selector">
+            <div class="object-type-btn active" data-type="pen">أقلام ✏️</div>
+            <div class="object-type-btn" data-type="book">كتب 📚</div>
+            <div class="object-type-btn" data-type="apple">تفاح 🍎</div>
+        </div>
+        
+        <div class="objects-container">
+            <div class="original-items" id="original-items">
+                <!-- العناصر الأصلية ستظهر هنا -->
+            </div>
+            
+            <div class="subtracted-items" id="subtracted-items">
+                <p>العناصر المطروحة</p>
+                <!-- العناصر المطروحة ستظهر هنا -->
+            </div>
+        </div>
+        
+        <div class="explanation" id="explanation">
+            <p>الطرح يعني إزالة عدد من مجموعة. اسحب <span id="exp-number">٢</span> عناصر من اليسار إلى اليمين</p>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="controls">
+            <button id="check-btn">تحقق</button>
+            <button id="new-problem">مسألة جديدة</button>
+            <button id="auto-demo">عرض توضيحي</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // العناصر الرئيسية
+            const firstNumberElement = document.getElementById('first-number');
+            const secondNumberElement = document.getElementById('second-number');
+            const resultElement = document.getElementById('result');
+            const originalItemsContainer = document.getElementById('original-items');
+            const subtractedItemsContainer = document.getElementById('subtracted-items');
+            const feedbackElement = document.getElementById('feedback');
+            const checkBtn = document.getElementById('check-btn');
+            const newProblemBtn = document.getElementById('new-problem');
+            const autoDemoBtn = document.getElementById('auto-demo');
+            const explanationElement = document.getElementById('explanation');
+            const expNumberElement = document.getElementById('exp-number');
+            const objectTypeBtns = document.querySelectorAll('.object-type-btn');
+            
+            // متغيرات اللعبة
+            let firstNumber = 5;
+            let secondNumber = 2;
+            let correctAnswer = 3;
+            let currentObjectType = 'pen';
+            let items = [];
+            let subtractedItems = 0;
+            
+            // رموز العناصر حسب النوع
+            const objectSymbols = {
+                pen: '✏️',
+                book: '📚',
+                apple: '🍎'
+            };
+            
+            // تهيئة اللعبة
+            function initGame() {
+                generateProblem();
+                createItems();
+                setupEventListeners();
+            }
+            
+            // توليد مسألة جديدة
+            function generateProblem() {
+                firstNumber = Math.floor(Math.random() * 8) + 2;
+                secondNumber = Math.floor(Math.random() * (firstNumber - 1)) + 1;
+                correctAnswer = firstNumber - secondNumber;
+                
+                // تحديث المعادلة بالأرقام العربية
+                firstNumberElement.textContent = toArabicNumerals(firstNumber);
+                secondNumberElement.textContent = toArabicNumerals(secondNumber);
+                resultElement.textContent = '؟';
+                expNumberElement.textContent = toArabicNumerals(secondNumber);
+                
+                feedbackElement.textContent = '';
+                feedbackElement.className = 'feedback';
+                
+                subtractedItems = 0;
+            }
+            
+            // تحويل الأرقام إلى عربية
+            function toArabicNumerals(num) {
+                const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                return num.toString().split('').map(digit => arabicNumerals[parseInt(digit)]).join('');
+            }
+            
+            // إنشاء العناصر
+            function createItems() {
+                originalItemsContainer.innerHTML = '';
+                subtractedItemsContainer.innerHTML = '<p>العناصر المطروحة</p>';
+                items = [];
+                
+                for (let i = 0; i < firstNumber; i++) {
+                    const item = document.createElement('div');
+                    item.className = `item ${currentObjectType}`;
+                    item.textContent = objectSymbols[currentObjectType];
+                    item.dataset.index = i;
+                    item.setAttribute('draggable', 'true');
+                    
+                    // إضافة رقم تسلسلي
+                    const counter = document.createElement('div');
+                    counter.className = 'item-counter';
+                    counter.textContent = toArabicNumerals(i + 1);
+                    item.appendChild(counter);
+                    
+                    originalItemsContainer.appendChild(item);
+                    items.push(item);
+                }
+            }
+            
+            // إعداد السحب والإفلات
+            function setupEventListeners() {
+                items.forEach(item => {
+                    item.addEventListener('dragstart', dragStart);
+                });
+                
+                subtractedItemsContainer.addEventListener('dragover', dragOver);
+                subtractedItemsContainer.addEventListener('dragenter', dragEnter);
+                subtractedItemsContainer.addEventListener('dragleave', dragLeave);
+                subtractedItemsContainer.addEventListener('drop', drop);
+                
+                // أحداث أزرار التحكم
+                checkBtn.addEventListener('click', checkAnswer);
+                newProblemBtn.addEventListener('click', resetGame);
+                autoDemoBtn.addEventListener('click', autoDemonstrate);
+                
+                // أحداث تغيير نوع العنصر
+                objectTypeBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        objectTypeBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        currentObjectType = this.dataset.type;
+                        createItems();
+                        setupEventListeners();
+                    });
+                });
+            }
+            
+            // أحداث السحب والإفلات
+            function dragStart(e) {
+                e.dataTransfer.setData('text/plain', this.dataset.index);
+            }
+            
+            function dragOver(e) {
+                e.preventDefault();
+            }
+            
+            function dragEnter(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '#e3f2fd';
+            }
+            
+            function dragLeave() {
+                this.style.backgroundColor = '#f1f1f1';
+            }
+            
+            function drop(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '#f1f1f1';
+                
+                const itemIndex = e.dataTransfer.getData('text/plain');
+                const item = items[itemIndex];
+                
+                if (item && !item.classList.contains('subtracted') && subtractedItems < secondNumber) {
+                    item.classList.add('subtracted');
+                    moveItemToSubtracted(item);
+                    subtractedItems++;
+                    
+                    if (subtractedItems === secondNumber) {
+                        showResult();
+                    }
+                }
+            }
+            
+            // نقل العنصر إلى منطقة المطروح
+            function moveItemToSubtracted(item) {
+                const itemClone = item.cloneNode(true);
+                itemClone.style.position = 'absolute';
+                itemClone.style.left = `${item.getBoundingClientRect().left}px`;
+                itemClone.style.top = `${item.getBoundingClientRect().top}px`;
+                document.body.appendChild(itemClone);
+                
+                const targetRect = subtractedItemsContainer.getBoundingClientRect();
+                const targetX = targetRect.left + (targetRect.width / 2) - 15;
+                const targetY = targetRect.top + 50 + (subtractedItems % 3) * 40;
+                
+                item.style.visibility = 'hidden';
+                
+                itemClone.animate([
+                    { left: `${item.getBoundingClientRect().left}px`, top: `${item.getBoundingClientRect().top}px` },
+                    { left: `${targetX}px`, top: `${targetY}px` }
+                ], {
+                    duration: 500,
+                    easing: 'ease-out'
+                }).onfinish = () => {
+                    const newItem = document.createElement('div');
+                    newItem.className = `item ${currentObjectType}`;
+                    newItem.textContent = objectSymbols[currentObjectType];
+                    subtractedItemsContainer.appendChild(newItem);
+                    itemClone.remove();
+                };
+            }
+            
+            // عرض النتيجة
+            function showResult() {
+                resultElement.textContent = toArabicNumerals(correctAnswer);
+                feedbackElement.textContent = `أحسنت! ${toArabicNumerals(firstNumber)} - ${toArabicNumerals(secondNumber)} = ${toArabicNumerals(correctAnswer)}`;
+                feedbackElement.className = 'feedback correct';
+            }
+            
+            // التحقق من الإجابة
+            function checkAnswer() {
+                if (subtractedItems < secondNumber) {
+                    feedbackElement.textContent = `لم تقم بطرح جميع العناصر بعد! يجب طرح ${toArabicNumerals(secondNumber)} عناصر`;
+                    feedbackElement.className = 'feedback incorrect';
+                    return;
+                }
+                
+                showResult();
+            }
+            
+            // عرض توضيحي تلقائي
+            function autoDemonstrate() {
+                resetGame();
+                
+                let counter = 0;
+                const interval = setInterval(() => {
+                    if (counter < secondNumber) {
+                        const item = items[counter];
+                        item.classList.add('subtracted');
+                        moveItemToSubtracted(item);
+                        subtractedItems++;
+                        counter++;
+                        
+                        if (subtractedItems === secondNumber) {
+                            showResult();
+                            clearInterval(interval);
+                        }
+                    }
+                }, 800);
+            }
+            
+            // إعادة تعيين اللعبة
+            function resetGame() {
+                generateProblem();
+                createItems();
+                setupEventListeners();
+            }
+            
+            // بدء اللعبة
+            initGame();
+        });
+    </script>
+</body>
+</html>

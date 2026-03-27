@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحاكاة التفاعلية للدوال المثلثية</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            text-align: center;
+        }
+        h1 {
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            margin-bottom: 30px;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        #graph-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
+        }
+        #graph-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #unit-circle {
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        #controls {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            width: 800px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .control-group {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 5px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            min-width: 120px;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        }
+        button.active {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            box-shadow: 0 0 15px rgba(255,75,43,0.6);
+        }
+        .slider-container {
+            width: 100%;
+            margin: 15px 0;
+        }
+        .slider-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #a1c4fd;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        #function-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 18px;
+            border-left: 4px solid #2575fc;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-left: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 850px) {
+            #graph-container, #controls {
+                width: 95%;
+            }
+            #unit-circle {
+                position: static;
+                margin: 20px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>المحاكاة التفاعلية للدوال المثلثية</h1>
+    
+    <div id="container">
+        <div id="graph-container">
+            <canvas id="graph-canvas" width="800" height="500"></canvas>
+            <svg id="unit-circle" width="200" height="200" viewBox="0 0 200 200"></svg>
+        </div>
+        
+        <div id="controls">
+            <div class="control-group">
+                <button id="sin-btn" class="active">دالة الجيب (sin)</button>
+                <button id="cos-btn">جيب التمام (cos)</button>
+                <button id="tan-btn">الظل (tan)</button>
+            </div>
+            
+            <div class="slider-container">
+                <label for="frequency">التردد (عدد الدورات): <span id="freq-value">1</span></label>
+                <input type="range" id="frequency" min="0.1" max="5" step="0.1" value="1">
+            </div>
+            
+            <div class="slider-container">
+                <label for="amplitude">السعة (المطال): <span id="amp-value">1</span></label>
+                <input type="range" id="amplitude" min="0.1" max="2" step="0.1" value="1">
+            </div>
+            
+            <div class="slider-container">
+                <label for="phase">انزياح الطور (راديان): <span id="phase-value">0</span></label>
+                <input type="range" id="phase" min="0" max="6.28" step="0.1" value="0">
+            </div>
+            
+            <div class="control-group">
+                <button id="animate-btn">تشغيل الحركة</button>
+                <button id="reset-btn">إعادة الضبط</button>
+                <button id="grid-btn">إظهار/إخفاء الشبكة</button>
+            </div>
+            
+            <div id="function-info">
+                الدالة المعروضة: <span id="current-function">y = sin(x)</span>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff416c;"></div>
+                <span>الجيب (sin)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2575fc;"></div>
+                <span>جيب التمام (cos)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffcc33;"></div>
+                <span>الظل (tan)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // العناصر الرئيسية
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+        const svg = document.getElementById('unit-circle');
+        const sinBtn = document.getElementById('sin-btn');
+        const cosBtn = document.getElementById('cos-btn');
+        const tanBtn = document.getElementById('tan-btn');
+        const animateBtn = document.getElementById('animate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const gridBtn = document.getElementById('grid-btn');
+        const frequencySlider = document.getElementById('frequency');
+        const amplitudeSlider = document.getElementById('amplitude');
+        const phaseSlider = document.getElementById('phase');
+        const freqValue = document.getElementById('freq-value');
+        const ampValue = document.getElementById('amp-value');
+        const phaseValue = document.getElementById('phase-value');
+        const currentFunction = document.getElementById('current-function');
+
+        // حالة المحاكاة
+        let currentFunc = 'sin';
+        let isAnimating = false;
+        let showGrid = true;
+        let animationId = null;
+        let angle = 0;
+        let time = 0;
+        
+        // الألوان
+        const colors = {
+            sin: '#ff416c',
+            cos: '#2575fc',
+            tan: '#ffcc33',
+            grid: 'rgba(255, 255, 255, 0.1)',
+            axis: 'rgba(255, 255, 255, 0.7)',
+            circle: 'rgba(255, 255, 255, 0.3)',
+            point: '#6a11cb',
+            text: 'rgba(255, 255, 255, 0.9)'
+        };
+
+        // تهيئة الرسم البياني
+        function initGraph() {
+            // مسح Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // رسم الشبكة إذا كانت مفعلة
+            if (showGrid) {
+                drawGrid();
+            }
+            
+            // رسم المحاور
+            drawAxes();
+            
+            // رسم دائرة الوحدة في SVG
+            drawUnitCircle();
+            
+            // تحديث نص الدالة المعروضة
+            updateFunctionText();
+        }
+
+        // رسم الشبكة
+        function drawGrid() {
+            ctx.strokeStyle = colors.grid;
+            ctx.lineWidth = 0.5;
+            
+            // الخطوط الأفقية
+            for (let y = 0; y <= canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // الخطوط العمودية
+            for (let x = 0; x <= canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+        }
+
+        // رسم المحاور
+        function drawAxes() {
+            ctx.strokeStyle = colors.axis;
+            ctx.lineWidth = 2;
+            
+            // المحور X
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+            
+            // المحور Y
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            
+            // وضع العلامات على المحور X
+            ctx.fillStyle = colors.text;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            for (let x = -4; x <= 4; x++) {
+                if (x === 0) continue;
+                const px = canvas.width / 2 + x * 80;
+                ctx.fillText(x + 'π', px, canvas.height / 2 + 20);
+            }
+            
+            // وضع العلامات على المحور Y
+            ctx.textAlign = 'right';
+            for (let y = -2; y <= 2; y++) {
+                if (y === 0) continue;
+                const py = canvas.height / 2 - y * 100;
+                ctx.fillText(y.toString(), canvas.width / 2 - 10, py + 5);
+            }
+            
+            // وضع العلامات عند الأصل
+            ctx.textAlign = 'center';
+            ctx.fillText('0', canvas.width / 2, canvas.height / 2 + 20);
+        }
+
+        // رسم الدالة المثلثية
+        function drawTrigFunction() {
+            const amplitude = parseFloat(amplitudeSlider.value);
+            const frequency = parseFloat(frequencySlider.value);
+            const phase = parseFloat(phaseSlider.value);
+            
+            ctx.strokeStyle = colors[currentFunc];
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            const centerY = canvas.height / 2;
+            const scaleY = 100; // معامل التحجيم الرأسي
+            const scaleX = 80; // معامل التحجيم الأفقي (بكسل لكل راديان)
+            
+            for (let x = 0; x < canvas.width; x++) {
+                // تحويل إحداثيات البكسل إلى قيمة x رياضية
+                const mathX = (x - canvas.width / 2) / scaleX;
+                
+                let y;
+                switch (currentFunc) {
+                    case 'sin':
+                        y = amplitude * Math.sin(frequency * mathX + phase + angle);
+                        break;
+                    case 'cos':
+                        y = amplitude * Math.cos(frequency * mathX + phase + angle);
+                        break;
+                    case 'tan':
+                        y = amplitude * Math.tan(frequency * mathX + phase + angle);
+                        // تجنب القيم غير المعرفة (اللانهاية)
+                        if (Math.abs(y) > 10) {
+                            ctx.moveTo(x+1, centerY - scaleY * y);
+                            continue;
+                        }
+                        break;
+                }
+                
+                const pixelY = centerY - scaleY * y;
+                
+                if (x === 0) {
+                    ctx.moveTo(x, pixelY);
+                } else {
+                    ctx.lineTo(x, pixelY);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // إضافة تأثير توهج للدالة
+            ctx.shadowColor = colors[currentFunc];
+            ctx.shadowBlur = 15;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        // رسم دائرة الوحدة في SVG
+        function drawUnitCircle() {
+            // مسح SVG الحالي
+            while (svg.firstChild) {
+                svg.removeChild(svg.firstChild);
+            }
+            
+            // رسم الدائرة
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", "100");
+            circle.setAttribute("cy", "100");
+            circle.setAttribute("r", "90");
+            circle.setAttribute("fill", "none");
+            circle.setAttribute("stroke", colors.circle);
+            circle.setAttribute("stroke-width", "2");
+            svg.appendChild(circle);
+            
+            // رسم المحاور
+            const xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            xAxis.setAttribute("x1", "10");
+            xAxis.setAttribute("y1", "100");
+            xAxis.setAttribute("x2", "190");
+            xAxis.setAttribute("y2", "100");
+            xAxis.setAttribute("stroke", colors.axis);
+            xAxis.setAttribute("stroke-width", "1.5");
+            svg.appendChild(xAxis);
+            
+            const yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            yAxis.setAttribute("x1", "100");
+            yAxis.setAttribute("y1", "10");
+            yAxis.setAttribute("x2", "100");
+            yAxis.setAttribute("y2", "190");
+            yAxis.setAttribute("stroke", colors.axis);
+            yAxis.setAttribute("stroke-width", "1.5");
+            svg.appendChild(yAxis);
+            
+            // حساب النقطة على دائرة الوحدة
+            const amplitude = parseFloat(amplitudeSlider.value);
+            const frequency = parseFloat(frequencySlider.value);
+            const phase = parseFloat(phaseSlider.value);
+            const currentAngle = frequency * time * 0.05 + phase + angle;
+            
+            const pointX = 100 + 90 * Math.cos(currentAngle);
+            const pointY = 100 - 90 * Math.sin(currentAngle);
+            
+            // رسم الخط من المركز إلى النقطة
+            const radiusLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            radiusLine.setAttribute("x1", "100");
+            radiusLine.setAttribute("y1", "100");
+            radiusLine.setAttribute("x2", pointX);
+            radiusLine.setAttribute("y2", pointY);
+            radiusLine.setAttribute("stroke", colors[currentFunc]);
+            radiusLine.setAttribute("stroke-width", "2");
+            svg.appendChild(radiusLine);
+            
+            // رسم النقطة
+            const point = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            point.setAttribute("cx", pointX);
+            point.setAttribute("cy", pointY);
+            point.setAttribute("r", "5");
+            point.setAttribute("fill", colors.point);
+            point.setAttribute("stroke", colors[currentFunc]);
+            point.setAttribute("stroke-width", "2");
+            svg.appendChild(point);
+            
+            // رسم إسقاطات الدالة
+            if (currentFunc === 'sin' || currentFunc === 'cos') {
+                const projectionColor = currentFunc === 'sin' ? 
+                    'rgba(255, 65, 108, 0.5)' : 'rgba(37, 117, 252, 0.5)';
+                
+                // إسقاط على المحور Y (لـ sin)
+                if (currentFunc === 'sin') {
+                    const sinLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    sinLine.setAttribute("x1", pointX);
+                    sinLine.setAttribute("y1", pointY);
+                    sinLine.setAttribute("x2", "100");
+                    sinLine.setAttribute("y2", pointY);
+                    sinLine.setAttribute("stroke", projectionColor);
+                    sinLine.setAttribute("stroke-width", "2");
+                    sinLine.setAttribute("stroke-dasharray", "5,5");
+                    svg.appendChild(sinLine);
+                    
+                    const sinPoint = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    sinPoint.setAttribute("cx", "100");
+                    sinPoint.setAttribute("cy", pointY);
+                    sinPoint.setAttribute("r", "3");
+                    sinPoint.setAttribute("fill", projectionColor);
+                    svg.appendChild(sinPoint);
+                }
+                
+                // إسقاط على المحور X (لـ cos)
+                if (currentFunc === 'cos') {
+                    const cosLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    cosLine.setAttribute("x1", pointX);
+                    cosLine.setAttribute("y1", pointY);
+                    cosLine.setAttribute("x2", pointX);
+                    cosLine.setAttribute("y2", "100");
+                    cosLine.setAttribute("stroke", projectionColor);
+                    cosLine.setAttribute("stroke-width", "2");
+                    cosLine.setAttribute("stroke-dasharray", "5,5");
+                    svg.appendChild(cosLine);
+                    
+                    const cosPoint = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    cosPoint.setAttribute("cx", pointX);
+                    cosPoint.setAttribute("cy", "100");
+                    cosPoint.setAttribute("r", "3");
+                    cosPoint.setAttribute("fill", projectionColor);
+                    svg.appendChild(cosPoint);
+                }
+            }
+            
+            // إضافة نص الزاوية
+            const angleText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            angleText.setAttribute("x", "20");
+            angleText.setAttribute("y", "30");
+            angleText.setAttribute("fill", colors.text);
+            angleText.setAttribute("font-size", "14");
+            angleText.textContent = `θ = ${(currentAngle % (2*Math.PI)).toFixed(2)} راديان`;
+            svg.appendChild(angleText);
+            
+            // إضافة قيمة الدالة
+            const valueText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            valueText.setAttribute("x", "20");
+            valueText.setAttribute("y", "50");
+            valueText.setAttribute("fill", colors.text);
+            valueText.setAttribute("font-size", "14");
+            
+            let funcValue;
+            switch (currentFunc) {
+                case 'sin': funcValue = Math.sin(currentAngle); break;
+                case 'cos': funcValue = Math.cos(currentAngle); break;
+                case 'tan': funcValue = Math.tan(currentAngle); break;
+            }
+            
+            valueText.textContent = `${currentFunc}(θ) = ${funcValue.toFixed(4)}`;
+            svg.appendChild(valueText);
+        }
+
+        // تحديث نص الدالة المعروضة
+        function updateFunctionText() {
+            const amplitude = amplitudeSlider.value;
+            const frequency = frequencySlider.value;
+            const phase = phaseSlider.value;
+            
+            let funcSymbol;
+            switch (currentFunc) {
+                case 'sin': funcSymbol = 'sin'; break;
+                case 'cos': funcSymbol = 'cos'; break;
+                case 'tan': funcSymbol = 'tan'; break;
+            }
+            
+            let phaseText = '';
+            if (parseFloat(phase) !== 0) {
+                phaseText = ` + ${phase}`;
+            }
+            
+            currentFunction.textContent = 
+                `y = ${amplitude} × ${funcSymbol}(${frequency}x${phaseText})`;
+        }
+
+        // دورة الحركة
+        function animate() {
+            if (isAnimating) {
+                time++;
+                angle += 0.02;
+            }
+            
+            initGraph();
+            drawTrigFunction();
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // معالجة أحداث الأزرار
+        sinBtn.addEventListener('click', function() {
+            currentFunc = 'sin';
+            sinBtn.classList.add('active');
+            cosBtn.classList.remove('active');
+            tanBtn.classList.remove('active');
+            updateFunctionText();
+        });
+
+        cosBtn.addEventListener('click', function() {
+            currentFunc = 'cos';
+            sinBtn.classList.remove('active');
+            cosBtn.classList.add('active');
+            tanBtn.classList.remove('active');
+            updateFunctionText();
+        });
+
+        tanBtn.addEventListener('click', function() {
+            currentFunc = 'tan';
+            sinBtn.classList.remove('active');
+            cosBtn.classList.remove('active');
+            tanBtn.classList.add('active');
+            updateFunctionText();
+        });
+
+        animateBtn.addEventListener('click', function() {
+            isAnimating = !isAnimating;
+            animateBtn.textContent = isAnimating ? 'إيقاف الحركة' : 'تشغيل الحركة';
+        });
+
+        resetBtn.addEventListener('click', function() {
+            isAnimating = false;
+            time = 0;
+            angle = 0;
+            animateBtn.textContent = 'تشغيل الحركة';
+            initGraph();
+        });
+
+        gridBtn.addEventListener('click', function() {
+            showGrid = !showGrid;
+            initGraph();
+        });
+
+        // معالجة أحداث المنزلقات
+        frequencySlider.addEventListener('input', function() {
+            freqValue.textContent = this.value;
+            updateFunctionText();
+            initGraph();
+        });
+
+        amplitudeSlider.addEventListener('input', function() {
+            ampValue.textContent = this.value;
+            updateFunctionText();
+            initGraph();
+        });
+
+        phaseSlider.addEventListener('input', function() {
+            phaseValue.textContent = this.value;
+            updateFunctionText();
+            initGraph();
+        });
+
+        // بدء المحاكاة
+        animate();
+    </script>
+</body>
+</html>

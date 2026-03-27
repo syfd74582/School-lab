@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحاكاة التفاعلية للتفاضل والتكامل</title>
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --derivative-color: #ff416c;
+            --integral-color: #4CAF50;
+            --area-color: rgba(76, 175, 80, 0.3);
+            --tangent-color: #FF9800;
+            --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            --panel-bg: rgba(255, 255, 255, 0.1);
+            --text-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        body {
+            font-family: 'Tajawal', 'Arial', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        h1, h2 {
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        
+        #main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 1000px) {
+            #main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        #graph-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        
+        #graph-canvas {
+            border-radius: 10px;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #animation-container {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        #animation-canvas {
+            border-radius: 10px;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex-grow: 1;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        button.active {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            box-shadow: 0 0 10px rgba(255,75,43,0.6);
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        
+        .info-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .info-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            color: var(--text-color);
+            padding: 10px 20px;
+            margin: 0;
+        }
+        
+        .tab-btn.active {
+            border-bottom-color: var(--primary-color);
+            background: rgba(106,17,203,0.2);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        #function-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <h1>المحاكاة التفاعلية للتفاضل والتكامل</h1>
+    <h2>فهم المفاهيم الأساسية وتطبيقاتها العملية</h2>
+    
+    <div id="main-container">
+        <div class="panel">
+            <h2>الرسم البياني والتحليل</h2>
+            <div id="graph-container">
+                <canvas id="graph-canvas" width="600" height="400"></canvas>
+            </div>
+            
+            <div class="control-group">
+                <button id="derivative-btn" class="active">المشتقة</button>
+                <button id="integral-btn">التكامل</button>
+                <button id="animate-btn">تشغيل الحركة</button>
+                <button id="reset-btn">إعادة الضبط</button>
+            </div>
+            
+            <div class="slider-container">
+                <label for="point-position">موضع النقطة: <span id="point-value">0</span></label>
+                <input type="range" id="point-position" min="-3" max="3" step="0.1" value="0">
+            </div>
+            
+            <div class="info-card">
+                <h3>أدخل الدالة الرياضية</h3>
+                <input type="text" id="function-input" value="Math.pow(x,3)/5 - x" placeholder="أدخل تعبير الدالة باستخدام x">
+                <p>أمثلة: Math.sin(x), x*x, Math.pow(x,3)/2</p>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>التطبيقات العملية</h2>
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="motion">حركة السيارة</button>
+                <button class="tab-btn" data-tab="growth">نمو السكان</button>
+                <button class="tab-btn" data-tab="area">حساب المساحة</button>
+            </div>
+            
+            <div class="tab-content active" id="motion-tab">
+                <div id="animation-container">
+                    <canvas id="motion-canvas" width="600" height="300"></canvas>
+                </div>
+                <p>العلاقة بين الموقع والسرعة والتسارع:</p>
+                <ul>
+                    <li>السرعة هي مشتقة الموقع بالنسبة للزمن</li>
+                    <li>التسارع هو مشتقة السرعة بالنسبة للزمن</li>
+                    <li>المسافة المقطوعة هي تكامل السرعة</li>
+                </ul>
+                <div class="slider-container">
+                    <label for="time">الزمن: <span id="time-value">0</span> ثانية</label>
+                    <input type="range" id="time" min="0" max="10" step="0.1" value="0">
+                </div>
+            </div>
+            
+            <div class="tab-content" id="growth-tab">
+                <div id="animation-container">
+                    <canvas id="growth-canvas" width="600" height="300"></canvas>
+                </div>
+                <p>نمو السكان والنمو الأسي:</p>
+                <ul>
+                    <li>معدل النمو هو مشتقة عدد السكان</li>
+                    <li>التغير الكلي هو تكامل معدل النمو</li>
+                    <li>dP/dt = kP (حيث k ثابت النمو)</li>
+                </ul>
+                <div class="slider-container">
+                    <label for="growth-rate">معدل النمو (k): <span id="growth-value">0.1</span></label>
+                    <input type="range" id="growth-rate" min="0.01" max="0.5" step="0.01" value="0.1">
+                </div>
+            </div>
+            
+            <div class="tab-content" id="area-tab">
+                <div id="animation-container">
+                    <canvas id="area-canvas" width="600" height="300"></canvas>
+                </div>
+                <p>حساب المساحة تحت المنحنى:</p>
+                <ul>
+                    <li>التكامل المحدد يحسب المساحة تحت المنحنى</li>
+                    <li>طريقة المستطيلات لتقريب المساحة</li>
+                    <li>كلما زاد عدد المستطيلات زادت الدقة</li>
+                </ul>
+                <div class="slider-container">
+                    <label for="rectangles">عدد المستطيلات: <span id="rectangles-value">10</span></label>
+                    <input type="range" id="rectangles" min="5" max="50" step="1" value="10">
+                </div>
+                <p id="area-result">المساحة المقربة: <strong>0</strong></p>
+            </div>
+            
+            <div class="info-card">
+                <h3>التطبيقات العملية للتفاضل والتكامل</h3>
+                <ul>
+                    <li>في الفيزياء: تحليل الحركة والقوى</li>
+                    <li>في الهندسة: حساب المساحات والأحجام</li>
+                    <li>في الاقتصاد: تحليل التكاليف والإيرادات</li>
+                    <li>في الطب: نمذجة انتشار الأمراض</li>
+                    <li>في الحاسوب: خوارزميات الذكاء الاصطناعي</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // العناصر الرئيسية
+        const graphCanvas = document.getElementById('graph-canvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const motionCanvas = document.getElementById('motion-canvas');
+        const motionCtx = motionCanvas.getContext('2d');
+        const growthCanvas = document.getElementById('growth-canvas');
+        const growthCtx = growthCanvas.getContext('2d');
+        const areaCanvas = document.getElementById('area-canvas');
+        const areaCtx = areaCanvas.getContext('2d');
+        const pointSlider = document.getElementById('point-position');
+        const pointValue = document.getElementById('point-value');
+        const derivativeBtn = document.getElementById('derivative-btn');
+        const integralBtn = document.getElementById('integral-btn');
+        const animateBtn = document.getElementById('animate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const functionInput = document.getElementById('function-input');
+        const timeSlider = document.getElementById('time');
+        const timeValue = document.getElementById('time-value');
+        const growthSlider = document.getElementById('growth-rate');
+        const growthValue = document.getElementById('growth-value');
+        const rectanglesSlider = document.getElementById('rectangles');
+        const rectanglesValue = document.getElementById('rectangles-value');
+        const areaResult = document.getElementById('area-result');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // حالة المحاكاة
+        let currentMode = 'derivative';
+        let isAnimating = false;
+        let currentPoint = 0;
+        let currentTime = 0;
+        let currentGrowthRate = 0.1;
+        let currentRectangles = 10;
+        let animationId = null;
+        let currentTab = 'motion';
+        let exampleAnimationId = null;
+        
+        // الأبعاد
+        const graphWidth = graphCanvas.width;
+        const graphHeight = graphCanvas.height;
+        const exampleWidth = motionCanvas.width;
+        const exampleHeight = motionCanvas.height;
+        
+        // الألوان
+        const colors = {
+            function: '#6a11cb',
+            derivative: '#ff416c',
+            integral: '#4CAF50',
+            area: 'rgba(76, 175, 80, 0.3)',
+            tangent: '#FF9800',
+            point: '#FFC107',
+            grid: 'rgba(255, 255, 255, 0.1)',
+            axis: 'rgba(255, 255, 255, 0.7)',
+            text: 'rgba(255, 255, 255, 0.9)',
+            car: '#2196F3',
+            velocity: '#FF5722',
+            acceleration: '#9C27B0',
+            population: '#4CAF50',
+            growth: '#FFC107'
+        };
+
+        // تهيئة الرسومات
+        function init() {
+            drawGraph();
+            drawMotionExample();
+            drawGrowthExample();
+            drawAreaExample();
+            
+            // أحداث التبويب
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    btn.classList.add('active');
+                    currentTab = btn.dataset.tab;
+                    document.getElementById(`${currentTab}-tab`).classList.add('active');
+                    
+                    // إعادة رسم المثال العملي عند تغيير التبويب
+                    cancelAnimationFrame(exampleAnimationId);
+                    if (currentTab === 'motion') drawMotionExample();
+                    else if (currentTab === 'growth') drawGrowthExample();
+                    else if (currentTab === 'area') drawAreaExample();
+                });
+            });
+            
+            // أحداث الأزرار
+            derivativeBtn.addEventListener('click', () => {
+                currentMode = 'derivative';
+                derivativeBtn.classList.add('active');
+                integralBtn.classList.remove('active');
+                drawGraph();
+            });
+            
+            integralBtn.addEventListener('click', () => {
+                currentMode = 'integral';
+                derivativeBtn.classList.remove('active');
+                integralBtn.classList.add('active');
+                drawGraph();
+            });
+            
+            animateBtn.addEventListener('click', () => {
+                isAnimating = !isAnimating;
+                animateBtn.textContent = isAnimating ? 'إيقاف الحركة' : 'تشغيل الحركة';
+                if (isAnimating) animate();
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                isAnimating = false;
+                currentPoint = 0;
+                currentTime = 0;
+                pointSlider.value = 0;
+                timeSlider.value = 0;
+                animateBtn.textContent = 'تشغيل الحركة';
+                updatePointValue();
+                updateTimeValue();
+                drawGraph();
+                if (currentTab === 'motion') drawMotionExample();
+                else if (currentTab === 'growth') drawGrowthExample();
+                else if (currentTab === 'area') drawAreaExample();
+            });
+            
+            // أحداث المنزلقات
+            pointSlider.addEventListener('input', () => {
+                currentPoint = parseFloat(pointSlider.value);
+                updatePointValue();
+                drawGraph();
+            });
+            
+            timeSlider.addEventListener('input', () => {
+                currentTime = parseFloat(timeSlider.value);
+                updateTimeValue();
+                drawMotionExample();
+            });
+            
+            growthSlider.addEventListener('input', () => {
+                currentGrowthRate = parseFloat(growthSlider.value);
+                growthValue.textContent = currentGrowthRate.toFixed(2);
+                drawGrowthExample();
+            });
+            
+            rectanglesSlider.addEventListener('input', () => {
+                currentRectangles = parseInt(rectanglesSlider.value);
+                rectanglesValue.textContent = currentRectangles;
+                drawAreaExample();
+            });
+            
+            // حدث تغيير الدالة
+            functionInput.addEventListener('input', () => {
+                drawGraph();
+                if (currentTab === 'area') drawAreaExample();
+            });
+        }
+
+        // تقييم الدالة المدخلة
+        function evaluateFunction(x) {
+            try {
+                return eval(functionInput.value);
+            } catch (e) {
+                return x; // الدالة الافتراضية إذا كان هناك خطأ
+            }
+        }
+
+        // حساب المشتقة العددية
+        function calculateDerivative(x) {
+            const h = 0.0001;
+            return (evaluateFunction(x + h) - evaluateFunction(x - h)) / (2 * h);
+        }
+
+        // حساب التكامل العددي
+        function calculateIntegral(a, b, n = 100) {
+            const dx = (b - a) / n;
+            let sum = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const x = a + i * dx;
+                sum += evaluateFunction(x) * dx;
+            }
+            
+            return sum;
+        }
+
+        // رسم الرسم البياني
+        function drawGraph() {
+            graphCtx.clearRect(0, 0, graphWidth, graphHeight);
+            
+            // رسم الشبكة
+            drawGrid(graphCtx, graphWidth, graphHeight);
+            
+            // رسم المحاور
+            drawAxes(graphCtx, graphWidth, graphHeight);
+            
+            // رسم الدالة الأصلية
+            drawFunction(graphCtx, graphWidth, graphHeight);
+            
+            // رسم إما المشتقة أو التكامل حسب الوضع الحالي
+            if (currentMode === 'derivative') {
+                drawDerivative(graphCtx, graphWidth, graphHeight);
+                drawTangentLine(graphCtx, graphWidth, graphHeight);
+            } else {
+                drawIntegral(graphCtx, graphWidth, graphHeight);
+            }
+            
+            // رسم النقطة الحالية
+            drawCurrentPoint(graphCtx, graphWidth, graphHeight);
+        }
+
+        // رسم الشبكة
+        function drawGrid(ctx, width, height) {
+            ctx.strokeStyle = colors.grid;
+            ctx.lineWidth = 0.5;
+            
+            // الخطوط الأفقية
+            for (let y = 0; y <= height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // الخطوط العمودية
+            for (let x = 0; x <= width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+        }
+
+        // رسم المحاور
+        function drawAxes(ctx, width, height) {
+            ctx.strokeStyle = colors.axis;
+            ctx.lineWidth = 2;
+            
+            // المحور X
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+            
+            // المحور Y
+            ctx.beginPath();
+            ctx.moveTo(width / 2, 0);
+            ctx.lineTo(width / 2, height);
+            ctx.stroke();
+            
+            // وضع العلامات على المحور X
+            ctx.fillStyle = colors.text;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            for (let x = -3; x <= 3; x++) {
+                if (x === 0) continue;
+                const px = width / 2 + x * 100;
+                ctx.fillText(x.toString(), px, height / 2 + 20);
+            }
+            
+            // وضع العلامات على المحور Y
+            ctx.textAlign = 'right';
+            for (let y = -2; y <= 2; y++) {
+                if (y === 0) continue;
+                const py = height / 2 - y * 100;
+                ctx.fillText(y.toString(), width / 2 - 10, py + 5);
+            }
+            
+            // وضع العلامات عند الأصل
+            ctx.textAlign = 'center';
+            ctx.fillText('0', width / 2, height / 2 + 20);
+        }
+
+        // رسم الدالة الأصلية
+        function drawFunction(ctx, width, height) {
+            ctx.strokeStyle = colors.function;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            const centerY = height / 2;
+            const scaleY = 100; // معامل التحجيم الرأسي
+            const scaleX = 100; // معامل التحجيم الأفقي
+            
+            for (let x = 0; x < width; x++) {
+                const mathX = (x - width / 2) / scaleX;
+                const mathY = evaluateFunction(mathX);
+                
+                const pixelY = centerY - mathY * scaleY;
+                
+                if (x === 0) {
+                    ctx.moveTo(x, pixelY);
+                } else {
+                    ctx.lineTo(x, pixelY);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // إضافة تسمية الدالة
+            ctx.fillStyle = colors.function;
+            ctx.font = '14px Arial';
+            ctx.fillText('f(x)', 30, 30);
+        }
+
+        // رسم المشتقة
+        function drawDerivative(ctx, width, height) {
+            ctx.strokeStyle = colors.derivative;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            
+            const centerY = height / 2;
+            const scaleY = 100;
+            const scaleX = 100;
+            
+            for (let x = 0; x < width; x++) {
+                const mathX = (x - width / 2) / scaleX;
+                const derivative = calculateDerivative(mathX);
+                
+                const pixelY = centerY - derivative * scaleY;
+                
+                if (x === 0) {
+                    ctx.moveTo(x, pixelY);
+                } else {
+                    ctx.lineTo(x, pixelY);
+                }
+            }
+            
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // إضافة تسمية المشتقة
+            ctx.fillStyle = colors.derivative;
+            ctx.font = '14px Arial';
+            ctx.fillText("f'(x)", 30, 50);
+        }
+
+        // رسم خط المماس
+        function drawTangentLine(ctx, width, height) {
+            const centerY = height / 2;
+            const scaleY = 100;
+            const scaleX = 100;
+            
+            const x = currentPoint;
+            const y = evaluateFunction(x);
+            const slope = calculateDerivative(x);
+            
+            const pixelX = width / 2 + x * scaleX;
+            const pixelY = centerY - y * scaleY;
+            
+            // حساب نقطتين على خط المماس
+            const x1 = x - 1;
+            const y1 = y - slope * 1;
+            const x2 = x + 1;
+            const y2 = y + slope * 1;
+            
+            const pixelX1 = width / 2 + x1 * scaleX;
+            const pixelY1 = centerY - y1 * scaleY;
+            const pixelX2 = width / 2 + x2 * scaleX;
+            const pixelY2 = centerY - y2 * scaleY;
+            
+            // رسم خط المماس
+            ctx.strokeStyle = colors.tangent;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(pixelX1, pixelY1);
+            ctx.lineTo(pixelX2, pixelY2);
+            ctx.stroke();
+            
+            // إضافة معادلة المماس
+            ctx.fillStyle = colors.tangent;
+            ctx.font = '12px Arial';
+            ctx.fillText(`ميل المماس: ${slope.toFixed(2)}`, pixelX + 10, pixelY - 10);
+        }
+
+        // رسم التكامل
+        function drawIntegral(ctx, width, height) {
+            const centerY = height / 2;
+            const scaleY = 100;
+            const scaleX = 100;
+            
+            const a = -3;
+            const b = currentPoint;
+            const n = 20; // عدد المستطيلات
+            
+            const dx = (b - a) / n;
+            
+            ctx.fillStyle = colors.area;
+            ctx.strokeStyle = colors.integral;
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i < n; i++) {
+                const x = a + i * dx;
+                const nextX = x + dx;
+                const y = evaluateFunction(x);
+                
+                const pixelX = width / 2 + x * scaleX;
+                const pixelY = centerY - y * scaleY;
+                const pixelNextX = width / 2 + nextX * scaleX;
+                const pixelZeroY = centerY;
+                
+                // رسم المستطيل
+                ctx.beginPath();
+                ctx.moveTo(pixelX, pixelY);
+                ctx.lineTo(pixelX, pixelZeroY);
+                ctx.lineTo(pixelNextX, pixelZeroY);
+                ctx.lineTo(pixelNextX, pixelY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+            
+            // إضافة قيمة التكامل
+            const integralValue = calculateIntegral(a, b);
+            ctx.fillStyle = colors.integral;
+            ctx.font = '14px Arial';
+            ctx.fillText(`التكامل ≈ ${integralValue.toFixed(2)}`, width / 2, 30);
+        }
+
+        // رسم النقطة الحالية
+        function drawCurrentPoint(ctx, width, height) {
+            const centerY = height / 2;
+            const scaleY = 100;
+            const scaleX = 100;
+            
+            const x = currentPoint;
+            const y = evaluateFunction(x);
+            
+            const pixelX = width / 2 + x * scaleX;
+            const pixelY = centerY - y * scaleY;
+            
+            // رسم النقطة
+            ctx.fillStyle = colors.point;
+            ctx.beginPath();
+            ctx.arc(pixelX, pixelY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // إحداثيات النقطة
+            ctx.fillStyle = colors.text;
+            ctx.font = '12px Arial';
+            ctx.fillText(`(${x.toFixed(1)}, ${y.toFixed(1)})`, pixelX + 10, pixelY - 10);
+        }
+
+        // رسم مثال الحركة
+        function drawMotionExample() {
+            motionCtx.clearRect(0, 0, exampleWidth, exampleHeight);
+            
+            // رسم المحاور
+            motionCtx.strokeStyle = colors.axis;
+            motionCtx.lineWidth = 1;
+            
+            // المحور الزمني (X)
+            motionCtx.beginPath();
+            motionCtx.moveTo(50, exampleHeight - 50);
+            motionCtx.lineTo(exampleWidth - 50, exampleHeight - 50);
+            motionCtx.stroke();
+            
+            // المحور الموقع (Y)
+            motionCtx.beginPath();
+            motionCtx.moveTo(50, 50);
+            motionCtx.lineTo(50, exampleHeight - 50);
+            motionCtx.stroke();
+            
+            // تسميات المحاور
+            motionCtx.fillStyle = colors.text;
+            motionCtx.font = '12px Arial';
+            motionCtx.fillText('الزمن (ثانية)', exampleWidth - 50, exampleHeight - 30);
+            motionCtx.fillText('الموقع (متر)', 30, 40);
+            
+            // دالة الموقع (موجة جيبية)
+            function position(t) {
+                return 2 * Math.sin(t) + 3;
+            }
+            
+            // دالة السرعة (مشتقة الموقع)
+            function velocity(t) {
+                return 2 * Math.cos(t);
+            }
+            
+            // دالة التسارع (مشتقة السرعة)
+            function acceleration(t) {
+                return -2 * Math.sin(t);
+            }
+            
+            // رسم منحنيات الموقع والسرعة والتسارع
+            drawCurve(motionCtx, position, colors.function, 'الموقع', 0, 10);
+            drawCurve(motionCtx, velocity, colors.velocity, 'السرعة', 0, 10);
+            drawCurve(motionCtx, acceleration, colors.acceleration, 'التسارع', 0, 10);
+            
+            // رسم النقطة الحالية
+            const t = currentTime;
+            const x = 50 + t * (exampleWidth - 100) / 10;
+            const yPos = exampleHeight - 50 - position(t) * (exampleHeight - 100) / 6;
+            const yVel = exampleHeight - 50 - velocity(t) * (exampleHeight - 100) / 6;
+            const yAcc = exampleHeight - 50 - acceleration(t) * (exampleHeight - 100) / 6;
+            
+            // رسم خطوط مساعدة
+            motionCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+            motionCtx.setLineDash([2, 2]);
+            motionCtx.beginPath();
+            motionCtx.moveTo(x, 50);
+            motionCtx.lineTo(x, exampleHeight - 50);
+            motionCtx.stroke();
+            motionCtx.setLineDash([]);
+            
+            // رسم النقاط
+            drawPoint(motionCtx, x, yPos, colors.function);
+            drawPoint(motionCtx, x, yVel, colors.velocity);
+            drawPoint(motionCtx, x, yAcc, colors.acceleration);
+            
+            // رسم السيارة
+            const carX = 100 + position(t) * 30;
+            const carY = exampleHeight - 100;
+            
+            motionCtx.fillStyle = colors.car;
+            motionCtx.fillRect(carX - 20, carY - 10, 40, 20);
+            motionCtx.beginPath();
+            motionCtx.arc(carX - 15, carY + 10, 5, 0, Math.PI * 2);
+            motionCtx.arc(carX + 15, carY + 10, 5, 0, Math.PI * 2);
+            motionCtx.fill();
+            
+            // إضافة القيم الحالية
+            motionCtx.fillStyle = colors.text;
+            motionCtx.font = '12px Arial';
+            motionCtx.fillText(`الموقع: ${position(t).toFixed(2)} م`, exampleWidth - 150, 30);
+            motionCtx.fillText(`السرعة: ${velocity(t).toFixed(2)} م/ث`, exampleWidth - 150, 50);
+            motionCtx.fillText(`التسارع: ${acceleration(t).toFixed(2)} م/ث²`, exampleWidth - 150, 70);
+        }
+
+        // رسم مثال النمو السكاني
+        function drawGrowthExample() {
+            growthCtx.clearRect(0, 0, exampleWidth, exampleHeight);
+            
+            // رسم المحاور
+            growthCtx.strokeStyle = colors.axis;
+            growthCtx.lineWidth = 1;
+            
+            // المحور الزمني (X)
+            growthCtx.beginPath();
+            growthCtx.moveTo(50, exampleHeight - 50);
+            growthCtx.lineTo(exampleWidth - 50, exampleHeight - 50);
+            growthCtx.stroke();
+            
+            // المحور السكان (Y)
+            growthCtx.beginPath();
+            growthCtx.moveTo(50, 50);
+            growthCtx.lineTo(50, exampleHeight - 50);
+            growthCtx.stroke();
+            
+            // تسميات المحاور
+            growthCtx.fillStyle = colors.text;
+            growthCtx.font = '12px Arial';
+            growthCtx.fillText('الزمن (سنوات)', exampleWidth - 50, exampleHeight - 30);
+            growthCtx.fillText('عدد السكان', 30, 40);
+            
+            // حل معادلة النمو الأسي: dP/dt = kP
+            function population(t) {
+                return 1 * Math.exp(currentGrowthRate * t);
+            }
+            
+            // معدل النمو (مشتقة عدد السكان)
+            function growthRate(t) {
+                return currentGrowthRate * population(t);
+            }
+            
+            // رسم منحنى السكان
+            drawCurve(growthCtx, population, colors.population, 'عدد السكان', 0, 10);
+            
+            // رسم منحنى معدل النمو
+            drawCurve(growthCtx, growthRate, colors.growth, 'معدل النمو', 0, 10);
+            
+            // رسم النقطة الحالية
+            const t = 5; // زمن ثابت للتوضيح
+            const x = 50 + t * (exampleWidth - 100) / 10;
+            const yPop = exampleHeight - 50 - population(t) * (exampleHeight - 100) / population(10);
+            const yGrowth = exampleHeight - 50 - growthRate(t) * (exampleHeight - 100) / growthRate(10);
+            
+            // رسم خطوط مساعدة
+            growthCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+            growthCtx.setLineDash([2, 2]);
+            growthCtx.beginPath();
+            growthCtx.moveTo(x, 50);
+            growthCtx.lineTo(x, exampleHeight - 50);
+            growthCtx.stroke();
+            growthCtx.setLineDash([]);
+            
+            // رسم النقاط
+            drawPoint(growthCtx, x, yPop, colors.population);
+            drawPoint(growthCtx, x, yGrowth, colors.growth);
+            
+            // إضافة المعلومات
+            growthCtx.fillStyle = colors.text;
+            growthCtx.font = '12px Arial';
+            growthCtx.fillText(`عند t=5 سنوات:`, 100, 30);
+            growthCtx.fillText(`عدد السكان: ${population(5).toFixed(0)}`, 100, 50);
+            growthCtx.fillText(`معدل النمو: ${growthRate(5).toFixed(0)} فرد/سنة`, 100, 70);
+            growthCtx.fillText(`معادلة النمو: dP/dt = ${currentGrowthRate.toFixed(2)}P`, 100, 90);
+        }
+
+        // رسم مثال حساب المساحة
+        function drawAreaExample() {
+            areaCtx.clearRect(0, 0, exampleWidth, exampleHeight);
+            
+            // رسم المحاور
+            areaCtx.strokeStyle = colors.axis;
+            areaCtx.lineWidth = 1;
+            
+            // المحور X
+            areaCtx.beginPath();
+            areaCtx.moveTo(50, exampleHeight / 2);
+            areaCtx.lineTo(exampleWidth - 50, exampleHeight / 2);
+            areaCtx.stroke();
+            
+            // المحور Y
+            areaCtx.beginPath();
+            areaCtx.moveTo(exampleWidth / 2, 50);
+            areaCtx.lineTo(exampleWidth / 2, exampleHeight - 50);
+            areaCtx.stroke();
+            
+
+
+            // تسميات المحاور
+            areaCtx.fillStyle = colors.text;
+            areaCtx.font
+= '12px Arial';
+areaCtx.fillText('المحور السيني (x)', exampleWidth - 50, exampleHeight / 2 + 20);
+areaCtx.fillText('المحور الصادي (y)', exampleWidth / 2 - 30, 40);
+
+
+        // رسم الدالة المختارة
+        const centerY = exampleHeight / 2;
+        const scaleY = (exampleHeight - 100) / 6;
+        const scaleX = (exampleWidth - 100) / 6;
+        
+        areaCtx.strokeStyle = colors.function;
+        areaCtx.lineWidth = 2;
+        areaCtx.beginPath();
+        
+        for (let x = 0; x < exampleWidth; x++) {
+            const mathX = (x - exampleWidth / 2) / scaleX;
+            const mathY = evaluateFunction(mathX);
+            
+            const pixelY = centerY - mathY * scaleY;
+            
+            if (x === 0) {
+                areaCtx.moveTo(x, pixelY);
+            } else {
+                areaCtx.lineTo(x, pixelY);
+            }
+        }
+        
+        areaCtx.stroke();
+        
+        // حساب المساحة تحت المنحنى باستخدام طريقة المستطيلات
+        const a = -2; // الحد الأدنى للتكامل
+        const b = 2;  // الحد الأعلى للتكامل
+        const n = currentRectangles;
+        const dx = (b - a) / n;
+        
+        let totalArea = 0;
+        areaCtx.fillStyle = colors.area;
+        areaCtx.strokeStyle = colors.integral;
+        areaCtx.lineWidth = 1;
+        
+        for (let i = 0; i < n; i++) {
+            const x = a + i * dx;
+            const nextX = x + dx;
+            const y = evaluateFunction(x);
+            
+            const pixelX = exampleWidth / 2 + x * scaleX;
+            const pixelY = centerY - y * scaleY;
+            const pixelNextX = exampleWidth / 2 + nextX * scaleX;
+            const pixelZeroY = centerY;
+            
+            // رسم المستطيل
+            areaCtx.beginPath();
+            areaCtx.moveTo(pixelX, pixelY);
+            areaCtx.lineTo(pixelX, pixelZeroY);
+            areaCtx.lineTo(pixelNextX, pixelZeroY);
+            areaCtx.lineTo(pixelNextX, pixelY);
+            areaCtx.closePath();
+            areaCtx.fill();
+            areaCtx.stroke();
+            
+            totalArea += y * dx;
+        }
+        
+        // عرض نتيجة المساحة
+        areaResult.innerHTML = `المساحة المقربة: <strong>${totalArea.toFixed(4)}</strong> (باستخدام ${n} مستطيلات)`;
+        
+        // إضافة معلومات التكامل
+        areaCtx.fillStyle = colors.text;
+        areaCtx.font = '14px Arial';
+        areaCtx.fillText(`تكامل الدالة من ${a} إلى ${b}`, exampleWidth / 2, 30);
+        areaCtx.fillText(`عدد المستطيلات: ${n}`, exampleWidth / 2, 50);
+    }
+
+    // دالة مساعدة لرسم المنحنيات
+    function drawCurve(ctx, func, color, label, minX, maxX) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        for (let x = 0; x < ctx.canvas.width; x++) {
+            const t = minX + (x / ctx.canvas.width) * (maxX - minX);
+            const value = func(t);
+            
+            const y = ctx.canvas.height - 50 - value * (ctx.canvas.height - 100) / getMaxValue(func, minX, maxX);
+            
+            if (x === 0) {
+                ctx.moveTo(50 + x, y);
+            } else {
+                ctx.lineTo(50 + x, y);
+            }
+        }
+        
+        ctx.stroke();
+        
+        // إضافة تسمية المنحنى
+        ctx.fillStyle = color;
+        ctx.font = '12px Arial';
+        ctx.fillText(label, ctx.canvas.width - 100, 30 + Object.keys(colors).indexOf(label) * 20);
+    }
+
+    // دالة مساعدة لرسم النقاط
+    function drawPoint(ctx, x, y, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // دالة مساعدة لحساب القيمة العظمى للدالة
+    function getMaxValue(func, minX, maxX) {
+        let max = 0;
+        const steps = 100;
+        
+        for (let i = 0; i <= steps; i++) {
+            const t = minX + (i / steps) * (maxX - minX);
+            const value = Math.abs(func(t));
+            if (value > max) max = value;
+        }
+        
+        return max || 1; // تجنب القسمة على صفر
+    }
+
+    // تحديث قيمة النقطة المعروضة
+    function updatePointValue() {
+        pointValue.textContent = currentPoint.toFixed(2);
+    }
+
+    // تحديث قيمة الزمن المعروضة
+    function updateTimeValue() {
+        timeValue.textContent = currentTime.toFixed(1);
+    }
+
+    // دورة الحركة
+    function animate() {
+        currentPoint += 0.01;
+        if (currentPoint >= 3) currentPoint = -3;
+        
+        currentTime += 0.05;
+        if (currentTime >= 10) currentTime = 0;
+        
+        pointSlider.value = currentPoint;
+        timeSlider.value = currentTime;
+        updatePointValue();
+        updateTimeValue();
+        
+        drawGraph();
+        
+        if (currentTab === 'motion') drawMotionExample();
+        else if (currentTab === 'growth') drawGrowthExample();
+        else if (currentTab === 'area') drawAreaExample();
+        
+        if (isAnimating) {
+            animationId = requestAnimationFrame(animate);
+        }
+    }
+
+    // بدء المحاكاة
+    init();
+</script>
+</body> </html> 

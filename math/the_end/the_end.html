@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكاة تفاعلية متقدمة لدرس النهايات</title>
+    <style>
+        body {
+            font-family: 'Arial Arabic', 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f7fb;
+            text-align: center;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .simulation {
+            margin: 25px 0;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            box-shadow: inset 0 0 10px rgba(52, 152, 219, 0.2);
+        }
+        .controls {
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #eaf7fd;
+            border-radius: 10px;
+            border: 1px solid #b3e0ff;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .explanation {
+            text-align: right;
+            line-height: 1.8;
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #f0faf7;
+            border-radius: 10px;
+            border: 1px solid #a3e8c8;
+        }
+        input[type="range"] {
+            width: 320px;
+            margin: 12px 0;
+            -webkit-appearance: none;
+            height: 10px;
+            border-radius: 5px;
+            background: #d1e7f7;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+        .value-display {
+            font-weight: bold;
+            color: #e74c3c;
+            background-color: #fdedec;
+            padding: 3px 10px;
+            border-radius: 15px;
+            display: inline-block;
+            min-width: 40px;
+        }
+        .problem-section {
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #fff9e6;
+            border-radius: 10px;
+            border: 1px solid #ffe082;
+        }
+        .problem {
+            text-align: right;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .answer-input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            width: 100px;
+            text-align: center;
+            margin: 0 10px;
+        }
+        .check-btn {
+            background-color: #27ae60;
+        }
+        .check-btn:hover {
+            background-color: #219653;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .hint {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 10px;
+            cursor: pointer;
+            text-decoration: underline dotted;
+        }
+        .road-sign {
+            display: inline-block;
+            background-color: #f1c40f;
+            color: #2c3e50;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>محاكاة تفاعلية متقدمة لدرس النهايات</h1>
+        <h2 style="color: #3498db;">مثال واقعي: سرعة السيارة عند الاقتراب من إشارة مرور</h2>
+        
+        <div class="explanation">
+            <p>في هذا المثال، سنستكشف مفهوم <strong style="color: #e74c3c;">النهاية</strong> من خلال محاكاة <span style="color: #3498db;">سرعة سيارة</span> تقترب من <span class="road-sign">إشارة مرور حمراء</span>. عندما تقترب السيارة من الإشارة، يجب أن تقل سرعتها حتى تتوقف تمامًا عند الإشارة.</p>
+            <p>النهاية هنا تمثل السرعة التي تقترب منها السيارة عندما تكون المسافة بينها وبين الإشارة تقترب من الصفر.</p>
+            <p style="background-color: #eaf2f8; padding: 10px; border-radius: 5px; border-right: 4px solid #3498db;">رياضياً: <span style="font-family: 'Times New Roman', serif; font-size: 20px;">lim<sub style="color: #2c3e50;">المسافة→0</sub> السرعة = 0</span></p>
+        </div>
+        
+        <div class="simulation">
+            <svg id="simulationSVG" width="750" height="350" viewBox="0 0 750 350">
+                <!-- الخلفية -->
+                <rect x="0" y="0" width="750" height="350" fill="#f0f7fb" />
+                
+                <!-- السماء -->
+                <rect x="0" y="0" width="750" height="150" fill="#e1f0fa" />
+                
+                <!-- الطريق -->
+                <rect x="0" y="150" width="750" height="40" fill="#5d6d7e" />
+                <line x1="0" y1="190" x2="750" y2="190" stroke="#34495e" stroke-width="2" stroke-dasharray="5,5" />
+                
+                <!-- خطوط الطريق -->
+                <line x1="50" y1="170" x2="150" y2="170" stroke="white" stroke-width="4" />
+                <line x1="250" y1="170" x2="350" y2="170" stroke="white" stroke-width="4" />
+                <line x1="450" y1="170" x2="550" y2="170" stroke="white" stroke-width="4" />
+                <line x1="650" y1="170" x2="700" y2="170" stroke="white" stroke-width="4" />
+                
+                <!-- إشارة المرور -->
+                <rect x="680" y="50" width="40" height="100" fill="#34495e" rx="3" />
+                <circle id="trafficLight" cx="700" cy="80" r="15" fill="red" />
+                <rect x="695" y="75" width="10" height="10" fill="#f9f9f9" opacity="0.3" />
+                
+                <!-- المباني -->
+                <rect x="0" y="50" width="50" height="100" fill="#a5b1c2" />
+                <rect x="100" y="70" width="60" height="80" fill="#d1d8e0" />
+                <rect x="200" y="60" width="70" height="90" fill="#a5b1c2" />
+                <rect x="300" y="80" width="50" height="70" fill="#d1d8e0" />
+                
+                <!-- السيارة -->
+                <rect id="car" x="100" y="140" width="70" height="30" fill="#e74c3c" rx="5" />
+                <rect x="105" y="135" width="60" height="10" fill="#e74c3c" rx="3" />
+                <circle id="wheel1" cx="120" cy="170" r="12" fill="#2c3e50" />
+                <circle id="wheel2" cx="150" cy="170" r="12" fill="#2c3e50" />
+                <circle cx="120" cy="170" r="5" fill="#7f8c8d" />
+                <circle cx="150" cy="170" r="5" fill="#7f8c8d" />
+                
+                <!-- نوافذ السيارة -->
+                <rect x="115" y="145" width="15" height="10" fill="#aed6f1" rx="2" />
+                <rect x="140" y="145" width="15" height="10" fill="#aed6f1" rx="2" />
+                
+                <!-- محور الإحداثيات -->
+                <line x1="50" y1="280" x2="700" y2="280" stroke="#34495e" stroke-width="2" />
+                <line x1="50" y1="280" x2="50" y2="50" stroke="#34495e" stroke-width="2" />
+                
+                <!-- تسميات المحور -->
+                <text x="710" y="285" font-size="14" fill="#34495e" font-weight="bold">المسافة (م)</text>
+                <text x="30" y="40" font-size="14" fill="#34495e" font-weight="bold">السرعة (كم/س)</text>
+                
+                <!-- شبكة المحور -->
+                <line x1="50" y1="230" x2="700" y2="230" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="3,3" />
+                <line x1="50" y1="180" x2="700" y2="180" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="3,3" />
+                <line x1="50" y1="130" x2="700" y2="130" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="3,3" />
+                <line x1="50" y1="80" x2="700" y2="80" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="3,3" />
+                
+                <!-- نقاط على الرسم البياني -->
+                <path id="speedCurve" d="" fill="none" stroke="#3498db" stroke-width="4" stroke-linejoin="round" />
+                
+                <!-- خط التقارب -->
+                <line id="limitLine" x1="50" y1="280" x2="700" y2="280" stroke="#e74c3c" stroke-width="3" stroke-dasharray="6,4" />
+                <text id="limitText" x="710" y="285" font-size="14" fill="#e74c3c" font-weight="bold">النهاية = 0</text>
+                
+                <!-- مؤشر المسافة -->
+                <rect id="distanceIndicator" x="100" y="120" width="120" height="30" fill="white" rx="5" opacity="0.9" stroke="#3498db" stroke-width="1" />
+                <text id="distanceText" x="160" y="140" font-size="14" fill="#2c3e50" text-anchor="middle">المسافة: 50 م</text>
+                <rect id="speedIndicator" x="100" y="90" width="120" height="30" fill="white" rx="5" opacity="0.9" stroke="#e74c3c" stroke-width="1" />
+                <text id="speedText" x="160" y="110" font-size="14" fill="#2c3e50" text-anchor="middle">السرعة: 40 كم/س</text>
+                
+                <!-- مقياس الرسم البياني -->
+                <text x="150" y="235" font-size="12" fill="#7f8c8d">25 كم/س</text>
+                <text x="150" y="185" font-size="12" fill="#7f8c8d">50 كم/س</text>
+                <text x="150" y="135" font-size="12" fill="#7f8c8d">75 كم/س</text>
+            </svg>
+        </div>
+        
+        <div class="controls">
+            <h3 style="color: #3498db; margin-bottom: 15px;">التحكم في المحاكاة</h3>
+            <button id="startBtn">▶ بدء المحاكاة</button>
+            <button id="pauseBtn">⏸ إيقاف مؤقت</button>
+            <button id="resetBtn">↻ إعادة الضبط</button>
+            
+            <div style="margin-top: 20px;">
+                <label for="initialSpeed" style="color: #2c3e50;">السرعة الابتدائية (كم/س):</label>
+                <input type="range" id="initialSpeed" min="20" max="120" value="60">
+                <span id="initialSpeedValue" class="value-display">60</span>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <label for="brakingIntensity" style="color: #2c3e50;">شدة الفرملة:</label>
+                <input type="range" id="brakingIntensity" min="1" max="10" value="5">
+                <span id="brakingIntensityValue" class="value-display">5</span>
+            </div>
+        </div>
+        
+        <div class="problem-section">
+            <h3 style="color: #e67e22;">مسائل رياضية تفاعلية</h3>
+            
+            <div class="problem">
+                <p>1. إذا كانت سرعة السيارة تعطى بالدالة: <span style="font-family: 'Times New Roman', serif;">v(d) = 80 × (d/600)<sup>2</sup></span></p>
+                <p>حيث <span style="font-family: 'Times New Roman', serif;">v</span> هي السرعة (كم/س) و <span style="font-family: 'Times New Roman', serif;">d</span> هي المسافة المتبقية (م)، ما هي نهاية السرعة عندما تقترب المسافة من الصفر؟</p>
+                <input type="text" class="answer-input" id="answer1" placeholder="الإجابة">
+                <button class="check-btn" onclick="checkAnswer(1)">تحقق</button>
+                <div id="feedback1" class="feedback" style="display: none;"></div>
+                <div class="hint" onclick="showHint(1)">اضغط لعرض تلميح</div>
+            </div>
+            
+            <div class="problem">
+                <p>2. إذا كانت دالة السرعة: <span style="font-family: 'Times New Roman', serif;">v(d) = 50 × e<sup>-0.01d</sup></span></p>
+                <p>حيث <span style="font-family: 'Times New Roman', serif;">e</span> هو العدد النيبيري (≈2.718)، احسب قيمة النهاية عندما <span style="font-family: 'Times New Roman', serif;">d → 0</span></p>
+                <input type="text" class="answer-input" id="answer2" placeholder="الإجابة">
+                <button class="check-btn" onclick="checkAnswer(2)">تحقق</button>
+                <div id="feedback2" class="feedback" style="display: none;"></div>
+                <div class="hint" onclick="showHint(2)">اضغط لعرض تلميح</div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3 style="color: #16a085;">تطبيقات النهايات في الحياة الواقعية</h3>
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; text-align: right;">
+                <div style="background-color: #e8f8f5; padding: 15px; border-radius: 10px; margin: 10px; width: 250px;">
+                    <h4 style="color: #1abc9c;">🏎️ فيزياء الحركة</h4>
+                    <p>حساب السرعات اللحظية وتسارع الأجسام المتحركة عند لحظة زمنية محددة.</p>
+                </div>
+                <div style="background-color: #fef9e7; padding: 15px; border-radius: 10px; margin: 10px; width: 250px;">
+                    <h4 style="color: #f39c12;">📈 الاقتصاد والمالية</h4>
+                    <p>حساب معدلات النمو الاقتصادي وأسعار الفائدة عند نقاط زمنية معينة.</p>
+                </div>
+                <div style="background-color: #f4ecf7; padding: 15px; border-radius: 10px; margin: 10px; width: 250px;">
+                    <h4 style="color: #8e44ad;">🏗️ الهندسة المدنية</h4>
+                    <p>تصميم المنحنيات في الطرق والجسور لضمان الانتقال السلس بين المستويات المختلفة.</p>
+                </div>
+                <div style="background-color: #eaf2f8; padding: 15px; border-radius: 10px; margin: 10px; width: 250px;">
+                    <h4 style="color: #2980b9;">🌡️ الأرصاد الجوية</h4>
+                    <p>نمذجة تغير درجات الحرارة والضغط الجوي مع تغير الزمن أو الموقع.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // العناصر الأساسية
+        const car = document.getElementById('car');
+        const wheel1 = document.getElementById('wheel1');
+        const wheel2 = document.getElementById('wheel2');
+        const distanceText = document.getElementById('distanceText');
+        const speedText = document.getElementById('speedText');
+        const speedCurve = document.getElementById('speedCurve');
+        const limitLine = document.getElementById('limitLine');
+        const limitText = document.getElementById('limitText');
+        const distanceIndicator = document.getElementById('distanceIndicator');
+        const speedIndicator = document.getElementById('speedIndicator');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const initialSpeedInput = document.getElementById('initialSpeed');
+        const brakingIntensityInput = document.getElementById('brakingIntensity');
+        const initialSpeedValue = document.getElementById('initialSpeedValue');
+        const brakingIntensityValue = document.getElementById('brakingIntensityValue');
+        
+        // متغيرات المحاكاة
+        let animationId;
+        let carPosition = 100;
+        let currentSpeed = 60;
+        let initialSpeed = 60;
+        let brakingIntensity = 5;
+        let isSimulationRunning = false;
+        let isSimulationPaused = false;
+        let points = [];
+        
+        // تحديث القيم المعروضة
+        initialSpeedInput.addEventListener('input', function() {
+            initialSpeed = parseInt(this.value);
+            initialSpeedValue.textContent = initialSpeed;
+        });
+        
+        brakingIntensityInput.addEventListener('input', function() {
+            brakingIntensity = parseInt(this.value);
+            brakingIntensityValue.textContent = brakingIntensity;
+        });
+        
+        // بدء المحاكاة
+        startBtn.addEventListener('click', function() {
+            if (isSimulationRunning && !isSimulationPaused) return;
+            
+            if (isSimulationPaused) {
+                isSimulationPaused = false;
+                pauseBtn.textContent = "⏸ إيقاف مؤقت";
+                updateSimulation();
+                return;
+            }
+            
+            isSimulationRunning = true;
+            isSimulationPaused = false;
+            carPosition = 100;
+            currentSpeed = initialSpeed;
+            points = [];
+            
+            updateSimulation();
+        });
+        
+        // إيقاف مؤقت
+        pauseBtn.addEventListener('click', function() {
+            if (!isSimulationRunning) return;
+            
+            if (isSimulationPaused) {
+                isSimulationPaused = false;
+                this.textContent = "⏸ إيقاف مؤقت";
+                updateSimulation();
+            } else {
+                isSimulationPaused = true;
+                this.textContent = "▶ استئناف";
+                cancelAnimationFrame(animationId);
+            }
+        });
+        
+        // إعادة الضبط
+        resetBtn.addEventListener('click', function() {
+            isSimulationRunning = false;
+            isSimulationPaused = false;
+            pauseBtn.textContent = "⏸ إيقاف مؤقت";
+            cancelAnimationFrame(animationId);
+            
+            car.setAttribute('x', 100);
+            wheel1.setAttribute('cx', 120);
+            wheel2.setAttribute('cx', 150);
+            
+            carPosition = 100;
+            currentSpeed = initialSpeed;
+            points = [];
+            
+            distanceText.textContent = `المسافة: ${Math.round(680 - 100)} م`;
+            speedText.textContent = `السرعة: ${initialSpeed} كم/س`;
+            speedCurve.setAttribute('d', '');
+            
+            // إعادة مؤشرات المسافة والسرعة إلى مواقعها الأصلية
+            distanceIndicator.setAttribute('x', 100);
+            speedIndicator.setAttribute('x', 100);
+        });
+        
+        // تحديث المحاكاة
+        function updateSimulation() {
+            if (!isSimulationRunning || isSimulationPaused) return;
+            
+            // حساب المسافة المتبقية
+            const distance = 680 - carPosition;
+            
+            // إذا وصلت السيارة إلى الإشارة
+            if (distance <= 0) {
+                isSimulationRunning = false;
+                distanceText.textContent = 'المسافة: 0 م';
+                speedText.textContent = 'السرعة: 0 كم/س';
+                return;
+            }
+            
+            // حساب السرعة الجديدة (تناقصية حسب المسافة)
+            currentSpeed = Math.max(0, initialSpeed * Math.pow(distance / 580, brakingIntensity / 3));
+            
+            // تحديث موضع السيارة
+            carPosition += currentSpeed / 10;
+            
+            // حفظ النقاط للرسم البياني
+            points.push({
+                x: 50 + (carPosition - 100) * (650 / 580),
+                y: 280 - currentSpeed * 2
+            });
+            
+            // تحديث SVG
+            car.setAttribute('x', carPosition);
+            wheel1.setAttribute('cx', carPosition + 20);
+            wheel2.setAttribute('cx', carPosition + 50);
+            
+            // تحديث مؤشرات المسافة والسرعة
+            distanceIndicator.setAttribute('x', carPosition - 20);
+            speedIndicator.setAttribute('x', carPosition - 20);
+            
+            // تحديث النصوص
+            distanceText.textContent = `المسافة: ${Math.round(distance)} م`;
+            speedText.textContent = `السرعة: ${Math.round(currentSpeed)} كم/س`;
+            
+            // تحديث منحنى السرعة
+            if (points.length > 1) {
+                let pathData = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < points.length; i++) {
+                    pathData += ` L ${points[i].x} ${points[i].y}`;
+                }
+                speedCurve.setAttribute('d', pathData);
+            }
+            
+            // تحديث خط النهاية
+            limitLine.setAttribute('y1', 280);
+            limitLine.setAttribute('y2', 280);
+            limitText.setAttribute('y', 285);
+            limitText.textContent = 'النهاية = 0';
+            
+            animationId = requestAnimationFrame(updateSimulation);
+        }
+        
+        // وظائف المسائل الرياضية
+        function checkAnswer(problemNum) {
+            const answerInput = document.getElementById(`answer${problemNum}`);
+            const feedback = document.getElementById(`feedback${problemNum}`);
+            const answer = answerInput.value.trim();
+            
+            if (problemNum === 1) {
+                if (answer === "0") {
+                    feedback.textContent = "إجابة صحيحة! عندما تقترب المسافة من الصفر، تقترب السرعة من الصفر.";
+                    feedback.className = "feedback correct";
+                } else {
+                    feedback.textContent = "إجابة غير صحيحة. حاول مرة أخرى! تذكر أن النهاية تمثل قيمة التقارب عندما تقترب المسافة من الصفر.";
+                    feedback.className = "feedback incorrect";
+                }
+            } else if (problemNum === 2) {
+                if (answer === "50") {
+                    feedback.textContent = "إجابة صحيحة! عندما d→0، e^0=1، لذا النهاية هي 50.";
+                    feedback.className = "feedback correct";
+                } else {
+                    feedback.textContent = "ليس صحيحًا. تذكر أن e^0 = 1. حاول مرة أخرى!";
+                    feedback.className = "feedback incorrect";
+                }
+            }
+            
+            feedback.style.display = "block";
+        }
+        
+        function showHint(problemNum) {
+            const feedback = document.getElementById(`feedback${problemNum}`);
+            
+            if (problemNum === 1) {
+                feedback.textContent = "تلميح: عوّض d=0 في الدالة v(d) = 80 × (d/600)^2";
+                feedback.className = "feedback";
+            } else if (problemNum === 2) {
+                feedback.textContent = "تلميح: تذكر أن e^0 = 1، لذا عند d=0 تكون v(0) = 50 × 1";
+                feedback.className = "feedback";
+            }
+            
+            feedback.style.display = "block";
+        }
+        
+        // تهيئة أولية
+        initialSpeedValue.textContent = initialSpeed;
+        brakingIntensityValue.textContent = brakingIntensity;
+        distanceText.textContent = `المسافة: ${Math.round(680 - 100)} م`;
+        speedText.textContent = `السرعة: ${initialSpeed} كم/س`;
+    </script>
+</body>
+</html>

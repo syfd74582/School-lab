@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحاكاة التفاعلية الشاملة للدوال المثلثية</title>
+    <style>
+        :root {
+            --sin-color: #ff416c;
+            --cos-color: #2575fc;
+            --tan-color: #ffcc33;
+            --angle-color: #6a11cb;
+            --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            --panel-bg: rgba(255, 255, 255, 0.1);
+            --text-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        body {
+            font-family: 'Tajawal', 'Arial', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        h1, h2 {
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        
+        #main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 1000px) {
+            #main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        #graph-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        
+        #graph-canvas {
+            border-radius: 10px;
+        }
+        
+        #unit-circle-container {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        #unit-circle {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #real-world-example {
+            height: 300px;
+            position: relative;
+            margin-top: 20px;
+        }
+        
+        #example-canvas {
+            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex-grow: 1;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        button.active {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            box-shadow: 0 0 10px rgba(255,75,43,0.6);
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        
+        .info-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--angle-color);
+        }
+        
+        .info-card h3 {
+            margin-top: 0;
+            color: var(--angle-color);
+        }
+        
+        #applications-list {
+            columns: 2;
+            column-gap: 20px;
+        }
+        
+        #applications-list li {
+            margin-bottom: 8px;
+            break-inside: avoid;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            color: var(--text-color);
+            padding: 10px 20px;
+            margin: 0;
+        }
+        
+        .tab-btn.active {
+            border-bottom-color: var(--angle-color);
+            background: rgba(106,17,203,0.2);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .angle-mark {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(106,17,203,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>المحاكاة التفاعلية الشاملة للدوال المثلثية</h1>
+    <h2>فهم الزوايا المثلثية وتطبيقاتها العملية</h2>
+    
+    <div id="main-container">
+        <div class="panel">
+            <h2>الرسم البياني للدوال المثلثية</h2>
+            <div id="graph-container">
+                <canvas id="graph-canvas" width="600" height="400"></canvas>
+            </div>
+            
+            <div class="control-group">
+                <button id="sin-btn" class="active">الجيب (sin)</button>
+                <button id="cos-btn">جيب التمام (cos)</button>
+                <button id="tan-btn">الظل (tan)</button>
+                <button id="animate-btn">تشغيل الحركة</button>
+                <button id="reset-btn">إعادة الضبط</button>
+            </div>
+            
+            <div class="slider-container">
+                <label for="angle">الزاوية (θ): <span id="angle-value">0</span> راديان</label>
+                <input type="range" id="angle" min="0" max="6.28" step="0.01" value="0">
+            </div>
+            
+            <div class="info-card">
+                <h3>ماذا تمثل الزاوية θ؟</h3>
+                <p>الزاوية θ (ثيتا) هي الزاوية بين نصف القطر الموجب للمحور الأفقي ونصف القطر المرسوم على دائرة الوحدة. تقاس الزاوية بالراديان (2π راديان = 360°).</p>
+                <p>الدوال المثلثية تعطي النسب بين أضلاع المثلث القائم المرتبط بهذه الزاوية.</p>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>دائرة الوحدة والزاوية</h2>
+            <div id="unit-circle-container">
+                <svg id="unit-circle" width="100%" height="100%" viewBox="0 0 200 200"></svg>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--sin-color);"></div>
+                    <span>sin(θ) = الضلع المقابل / الوتر</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--cos-color);"></div>
+                    <span>cos(θ) = الضلع المجاور / الوتر</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--tan-color);"></div>
+                    <span>tan(θ) = الضلع المقابل / المجاور</span>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3>كيف تحسب الدوال المثلثية؟</h3>
+                <p>على دائرة الوحدة (نصف قطرها 1):</p>
+                <ul>
+                    <li><strong>جيب الزاوية (sin):</strong> الإحداثي y للنقطة على الدائرة</li>
+                    <li><strong>جيب التمام (cos):</strong> الإحداثي x للنقطة على الدائرة</li>
+                    <li><strong>الظل (tan):</strong> النسبة بين sin و cos (y/x)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>تطبيق عملي: قياس ارتفاع مبنى</h2>
+            <div id="real-world-example">
+                <canvas id="example-canvas" width="600" height="300"></canvas>
+                <div id="angle-mark" class="angle-mark"></div>
+            </div>
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="building">قياس ارتفاع مبنى</button>
+                <button class="tab-btn" data-tab="pendulum">حركة بندول</button>
+                <button class="tab-btn" data-tab="waves">الموجات والصوت</button>
+            </div>
+            
+            <div class="tab-content active" id="building-tab">
+                <p>لقياس ارتفاع مبنى باستخدام الدوال المثلثية:</p>
+                <ol>
+                    <li>قم بقياس المسافة منك إلى المبنى (المجاور)</li>
+                    <li>قم بقياس زاوية النظر إلى قمة المبنى (θ)</li>
+                    <li>استخدم العلاقة: الارتفاع = المسافة × tan(θ)</li>
+                </ol>
+                <div class="slider-container">
+                    <label for="distance">المسافة من المبنى: <span id="distance-value">50</span> متر</label>
+                    <input type="range" id="distance" min="10" max="100" value="50">
+                </div>
+                <p id="building-result">الارتفاع المحسوب: <strong>0</strong> متر</p>
+            </div>
+            
+            <div class="tab-content" id="pendulum-tab">
+                <p>حركة البندول تتبع الدوال المثلثية:</p>
+                <ul>
+                    <li>موضع البندول = السعة × sin(√(g/الطول) × الزمن)</li>
+                    <li>حيث g هي تسارع الجاذبية (9.8 م/ث²)</li>
+                </ul>
+                <div class="slider-container">
+                    <label for="pendulum-length">طول البندول: <span id="length-value">1</span> متر</label>
+                    <input type="range" id="pendulum-length" min="0.5" max="3" step="0.1" value="1">
+                </div>
+                <p id="pendulum-result">الزمن الدوري: <strong>2.0</strong> ثانية</p>
+            </div>
+            
+            <div class="tab-content" id="waves-tab">
+                <p>تستخدم الدوال المثلثية لنمذجة الموجات:</p>
+                <ul>
+                    <li>موجة الصوت: تغير الضغط مع الزمن</li>
+                    <li>موجة الضوء: تغير المجال الكهربائي والمغناطيسي</li>
+                    <li>الموجات المائية: ارتفاع سطح الماء</li>
+                </ul>
+                <p>معادلة الموجة: y = السعة × sin(2π(التردد × الزمن - الموضع/الطول الموجي))</p>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>التطبيقات العملية للدوال المثلثية</h2>
+            <div class="info-card">
+                <h3>لماذا ندرس الدوال المثلثية؟</h3>
+                <p>الدوال المثلثية أساسية في فهم الأنماط الدورية والعلاقات الزاوية في الطبيعة والتكنولوجيا.</p>
+            </div>
+            
+            <ul id="applications-list">
+                <li><strong>الهندسة المعمارية:</strong> حساب الأبعاد والزوايا في البناء</li>
+                <li><strong>الملاحة:</strong> تحديد المواقع في الطيران والملاحة البحرية</li>
+                <li><strong>الفيزياء:</strong> تحليل الحركة الدائرية والموجات</li>
+                <li><strong>الهندسة الكهربائية:</strong> تحليل التيار المتردد</li>
+                <li><strong>الرسومات الحاسوبية:</strong> تدوير وتحريك الكائنات</li>
+                <li><strong>علم الفلك:</strong> حساب المسافات بين الأجرام السماوية</li>
+                <li><strong>الطب:</strong> التصوير الطبي مثل الأشعة المقطعية</li>
+                <li><strong>الموسيقى:</strong> توليد وتخليق الأصوات</li>
+                <li><strong>الروبوتات:</strong> تحريك الأذرع الروبوتية</li>
+                <li><strong>الألعاب الإلكترونية:</strong> محاكاة الحركات والتصادمات</li>
+                <li><strong>مسح الأراضي:</strong> قياس المساحات والارتفاعات</li>
+                <li><strong>الذكاء الاصطناعي:</strong> معالجة الإشارات والتعرف على الأنماط</li>
+            </ul>
+            
+            <div class="info-card">
+                <h3>التحويل بين الدرجات والراديان</h3>
+                <p>1 راديان = 180°/π ≈ 57.3°</p>
+                <p>لتحويل من درجات إلى راديان: اضرب ب π/180</p>
+                <p>لتحويل من راديان إلى درجات: اضرب ب 180/π</p>
+                <p id="conversion-result">0 راديان = 0 درجة</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // العناصر الرئيسية
+        const graphCanvas = document.getElementById('graph-canvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const exampleCanvas = document.getElementById('example-canvas');
+        const exampleCtx = exampleCanvas.getContext('2d');
+        const svg = document.getElementById('unit-circle');
+        const angleSlider = document.getElementById('angle');
+        const angleValue = document.getElementById('angle-value');
+        const sinBtn = document.getElementById('sin-btn');
+        const cosBtn = document.getElementById('cos-btn');
+        const tanBtn = document.getElementById('tan-btn');
+        const animateBtn = document.getElementById('animate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const distanceSlider = document.getElementById('distance');
+        const distanceValue = document.getElementById('distance-value');
+        const buildingResult = document.getElementById('building-result');
+        const pendulumLength = document.getElementById('pendulum-length');
+        const lengthValue = document.getElementById('length-value');
+        const pendulumResult = document.getElementById('pendulum-result');
+        const conversionResult = document.getElementById('conversion-result');
+        const angleMark = document.getElementById('angle-mark');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // حالة المحاكاة
+        let currentFunc = 'sin';
+        let isAnimating = false;
+        let angle = 0;
+        let animationId = null;
+        let currentTab = 'building';
+        let exampleAnimationId = null;
+        
+        // الأبعاد
+        const graphWidth = graphCanvas.width;
+        const graphHeight = graphCanvas.height;
+        const exampleWidth = exampleCanvas.width;
+        const exampleHeight = exampleCanvas.height;
+        
+        // الألوان
+        const colors = {
+            sin: '#ff416c',
+            cos: '#2575fc',
+            tan: '#ffcc33',
+            angle: '#6a11cb',
+            grid: 'rgba(255, 255, 255, 0.1)',
+            axis: 'rgba(255, 255, 255, 0.7)',
+            circle: 'rgba(255, 255, 255, 0.3)',
+            point: '#6a11cb',
+            text: 'rgba(255, 255, 255, 0.9)',
+            building: '#4CAF50',
+            ground: '#795548'
+        };
+
+        // تهيئة الرسومات
+        function init() {
+            drawGraph();
+            drawUnitCircle();
+            drawRealWorldExample();
+            updateAngleMark();
+            updateBuildingExample();
+            updatePendulumExample();
+            updateAngleConversion();
+            
+            // أحداث التبويب
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    btn.classList.add('active');
+                    currentTab = btn.dataset.tab;
+                    document.getElementById(`${currentTab}-tab`).classList.add('active');
+                    
+                    // إعادة رسم المثال العملي عند تغيير التبويب
+                    cancelAnimationFrame(exampleAnimationId);
+                    drawRealWorldExample();
+                });
+            });
+            
+            // أحداث الأزرار
+            sinBtn.addEventListener('click', () => setActiveFunction('sin'));
+            cosBtn.addEventListener('click', () => setActiveFunction('cos'));
+            tanBtn.addEventListener('click', () => setActiveFunction('tan'));
+            
+            animateBtn.addEventListener('click', () => {
+                isAnimating = !isAnimating;
+                animateBtn.textContent = isAnimating ? 'إيقاف الحركة' : 'تشغيل الحركة';
+                if (isAnimating) animate();
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                isAnimating = false;
+                angle = 0;
+                angleSlider.value = 0;
+                animateBtn.textContent = 'تشغيل الحركة';
+                updateAngleValue();
+                drawGraph();
+                drawUnitCircle();
+                drawRealWorldExample();
+            });
+            
+            // أحداث المنزلقات
+            angleSlider.addEventListener('input', () => {
+                angle = parseFloat(angleSlider.value);
+                updateAngleValue();
+                drawGraph();
+                drawUnitCircle();
+                drawRealWorldExample();
+                updateAngleMark();
+                updateBuildingExample();
+                updateAngleConversion();
+            });
+            
+            distanceSlider.addEventListener('input', () => {
+                distanceValue.textContent = distanceSlider.value;
+                updateBuildingExample();
+            });
+            
+            pendulumLength.addEventListener('input', () => {
+                lengthValue.textContent = pendulumLength.value;
+                updatePendulumExample();
+            });
+        }
+
+        // رسم الرسم البياني
+        function drawGraph() {
+            graphCtx.clearRect(0, 0, graphWidth, graphHeight);
+            
+            // رسم الشبكة
+            drawGrid(graphCtx, graphWidth, graphHeight);
+            
+            // رسم المحاور
+            drawAxes(graphCtx, graphWidth, graphHeight);
+            
+            // رسم الدالة المثلثية
+            drawTrigFunction(graphCtx, graphWidth, graphHeight);
+        }
+
+        // رسم الشبكة
+        function drawGrid(ctx, width, height) {
+            ctx.strokeStyle = colors.grid;
+            ctx.lineWidth = 0.5;
+            
+            // الخطوط الأفقية
+            for (let y = 0; y <= height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // الخطوط العمودية
+            for (let x = 0; x <= width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+        }
+
+        // رسم المحاور
+        function drawAxes(ctx, width, height) {
+            ctx.strokeStyle = colors.axis;
+            ctx.lineWidth = 2;
+            
+            // المحور X
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+            
+            // المحور Y
+            ctx.beginPath();
+            ctx.moveTo(width / 2, 0);
+            ctx.lineTo(width / 2, height);
+            ctx.stroke();
+            
+            // وضع العلامات على المحور X
+            ctx.fillStyle = colors.text;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            for (let x = -4; x <= 4; x++) {
+                if (x === 0) continue;
+                const px = width / 2 + x * 80;
+                ctx.fillText(x + 'π', px, height / 2 + 20);
+            }
+            
+            // وضع العلامات على المحور Y
+            ctx.textAlign = 'right';
+            for (let y = -2; y <= 2; y++) {
+                if (y === 0) continue;
+                const py = height / 2 - y * 100;
+                ctx.fillText(y.toString(), width / 2 - 10, py + 5);
+            }
+            
+            // وضع العلامات عند الأصل
+            ctx.textAlign = 'center';
+            ctx.fillText('0', width / 2, height / 2 + 20);
+        }
+
+        // رسم الدالة المثلثية
+        function drawTrigFunction(ctx, width, height) {
+            ctx.strokeStyle = colors[currentFunc];
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            const centerY = height / 2;
+            const scaleY = 100; // معامل التحجيم الرأسي
+            const scaleX = 80; // معامل التحجيم الأفقي (بكسل لكل راديان)
+            
+            for (let x = 0; x < width; x++) {
+                // تحويل إحداثيات البكسل إلى قيمة x رياضية
+                const mathX = (x - width / 2) / scaleX;
+                
+                let y;
+                switch (currentFunc) {
+                    case 'sin':
+                        y = Math.sin(mathX + angle);
+                        break;
+                    case 'cos':
+                        y = Math.cos(mathX + angle);
+                        break;
+                    case 'tan':
+                        y = Math.tan(mathX + angle);
+                        // تجنب القيم غير المعرفة (اللانهاية)
+                        if (Math.abs(y) > 10) {
+                            ctx.moveTo(x+1, centerY - scaleY * y);
+                            continue;
+                        }
+                        break;
+                }
+                
+                const pixelY = centerY - scaleY * y;
+                
+                if (x === 0) {
+                    ctx.moveTo(x, pixelY);
+                } else {
+                    ctx.lineTo(x, pixelY);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // إضافة تأثير توهج للدالة
+            ctx.shadowColor = colors[currentFunc];
+            ctx.shadowBlur = 15;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // رسم خط الزاوية الحالية
+            const currentX = width / 2 + angle * scaleX;
+            if (currentX >= 0 && currentX <= width) {
+                ctx.strokeStyle = colors.angle;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(currentX, 0);
+                ctx.lineTo(currentX, height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // وضع علامة الزاوية
+                ctx.fillStyle = colors.angle;
+                ctx.fillText(`θ = ${angle.toFixed(2)}`, currentX, 20);
+            }
+        }
+
+        // رسم دائرة الوحدة
+        function drawUnitCircle() {
+            // مسح SVG الحالي
+            while (svg.firstChild) {
+                svg.removeChild(svg.firstChild);
+            }
+            
+            const centerX = 100;
+            const centerY = 100;
+            const radius = 90;
+            
+            // رسم الدائرة
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", centerX);
+            circle.setAttribute("cy", centerY);
+            circle.setAttribute("r", radius);
+            circle.setAttribute("fill", "none");
+            circle.setAttribute("stroke", colors.circle);
+            circle.setAttribute("stroke-width", "2");
+            svg.appendChild(circle);
+            
+            // رسم المحاور
+            const xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            xAxis.setAttribute("x1", centerX - radius);
+            xAxis.setAttribute("y1", centerY);
+            xAxis.setAttribute("x2", centerX + radius);
+            xAxis.setAttribute("y2", centerY);
+            xAxis.setAttribute("stroke", colors.axis);
+            xAxis.setAttribute("stroke-width", "1.5");
+            svg.appendChild(xAxis);
+            
+            const yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            yAxis.setAttribute("x1", centerX);
+            yAxis.setAttribute("y1", centerY - radius);
+            yAxis.setAttribute("x2", centerX);
+            yAxis.setAttribute("y2", centerY + radius);
+            yAxis.setAttribute("stroke", colors.axis);
+            yAxis.setAttribute("stroke-width", "1.5");
+            svg.appendChild(yAxis);
+            
+            // حساب النقطة على دائرة الوحدة
+            const pointX = centerX + radius * Math.cos(angle);
+            const pointY = centerY - radius * Math.sin(angle);
+            
+            // رسم الخط من المركز إلى النقطة
+            const radiusLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            radiusLine.setAttribute("x1", centerX);
+            radiusLine.setAttribute("y1", centerY);
+            radiusLine.setAttribute("x2", pointX);
+            radiusLine.setAttribute("y2", pointY);
+            radiusLine.setAttribute("stroke", colors.angle);
+            radiusLine.setAttribute("stroke-width", "2");
+            svg.appendChild(radiusLine);
+            
+            // رسم النقطة
+            const point = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            point.setAttribute("cx", pointX);
+            point.setAttribute("cy", pointY);
+            point.setAttribute("r", "5");
+            point.setAttribute("fill", colors.point);
+            point.setAttribute("stroke", colors.angle);
+            point.setAttribute("stroke-width", "2");
+            svg.appendChild(point);
+            
+            // رسم إسقاطات الدالة
+            if (currentFunc === 'sin' || currentFunc === 'cos') {
+                const projectionColor = currentFunc === 'sin' ? colors.sin : colors.cos;
+                
+                // إسقاط على المحور Y (لـ sin)
+                if (currentFunc === 'sin') {
+                    const sinLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    sinLine.setAttribute("x1", pointX);
+                    sinLine.setAttribute("y1", pointY);
+                    sinLine.setAttribute("x2", centerX);
+                    sinLine.setAttribute("y2", pointY);
+                    sinLine.setAttribute("stroke", projectionColor);
+                    sinLine.setAttribute("stroke-width", "2");
+                    sinLine.setAttribute("stroke-dasharray", "5,5");
+                    svg.appendChild(sinLine);
+                    
+                    const sinPoint = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    sinPoint.setAttribute("cx", centerX);
+                    sinPoint.setAttribute("cy", pointY);
+                    sinPoint.setAttribute("r", "3");
+                    sinPoint.setAttribute("fill", projectionColor);
+                    svg.appendChild(sinPoint);
+                }
+                
+                // إسقاط على المحور X (لـ cos)
+                if (currentFunc === 'cos') {
+                    const cosLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    cosLine.setAttribute("x1", pointX);
+                    cosLine.setAttribute("y1", pointY);
+                    cosLine.setAttribute("x2", pointX);
+                    cosLine.setAttribute("y2", centerY);
+                    cosLine.setAttribute("stroke", projectionColor);
+                    cosLine.setAttribute("stroke-width", "2");
+                    cosLine.setAttribute("stroke-dasharray", "5,5");
+                    svg.appendChild(cosLine);
+                    
+                    const cosPoint = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    cosPoint.setAttribute("cx", pointX);
+                    cosPoint.setAttribute("cy", centerY);
+                    cosPoint.setAttribute("r", "3");
+                    cosPoint.setAttribute("fill", projectionColor);
+                    svg.appendChild(cosPoint);
+                }
+            }
+            
+            // رسم الزاوية
+            const angleArc = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const arcRadius = 30;
+            const endX = centerX + arcRadius * Math.cos(angle);
+            const endY = centerY - arcRadius * Math.sin(angle);
+            
+            angleArc.setAttribute("d", `M ${centerX + arcRadius} ${centerY} A ${arcRadius} ${arcRadius} 0 ${angle > Math.PI ? 1 : 0} 0 ${endX} ${endY}`);
+            angleArc.setAttribute("fill", "none");
+            angleArc.setAttribute("stroke", colors.angle);
+            angleArc.setAttribute("stroke-width", "2");
+            svg.appendChild(angleArc);
+            
+            // إضافة نص الزاوية
+            const angleText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            angleText.setAttribute("x", centerX + (arcRadius + 10) * Math.cos(angle/2));
+            angleText.setAttribute("y", centerY - (arcRadius + 10) * Math.sin(angle/2));
+            angleText.setAttribute("fill", colors.angle);
+            angleText.setAttribute("font-size", "14");
+            angleText.textContent = 'θ';
+            svg.appendChild(angleText);
+            
+            // إضافة قيمة الدالة
+            const valueText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            valueText.setAttribute("x", "20");
+            valueText.setAttribute("y", "30");
+            valueText.setAttribute("fill", colors.text);
+            valueText.setAttribute("font-size", "14");
+            
+            let funcValue;
+            switch (currentFunc) {
+                case 'sin': funcValue = Math.sin(angle); break;
+                case 'cos': funcValue = Math.cos(angle); break;
+                case 'tan': funcValue = Math.tan(angle); break;
+            }
+            
+            valueText.textContent = `${currentFunc}(θ) = ${funcValue.toFixed(4)}`;
+            svg.appendChild(valueText);
+            
+            // إضافة مثلث قائم لتوضيح النسب
+            if (currentFunc !== 'tan' && angle > 0 && angle < Math.PI/2) {
+                const triangle = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                const points = `${centerX},${centerY} ${pointX},${centerY} ${pointX},${pointY}`;
+                triangle.setAttribute("points", points);
+                triangle.setAttribute("fill", "rgba(106,17,203,0.2)");
+                triangle.setAttribute("stroke", colors.angle);
+                triangle.setAttribute("stroke-width", "1");
+                svg.appendChild(triangle);
+                
+                // إضافة تسميات الأضلاع
+                const oppositeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                oppositeText.setAttribute("x", pointX + 10);
+                oppositeText.setAttribute("y", (centerY + pointY)/2);
+                oppositeText.setAttribute("fill", colors.sin);
+                oppositeText.setAttribute("font-size", "12");
+                oppositeText.textContent = "المقابل = sin(θ)";
+                svg.appendChild(oppositeText);
+                
+                const adjacentText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                adjacentText.setAttribute("x", (centerX + pointX)/2);
+                adjacentText.setAttribute("y", centerY + 15);
+                adjacentText.setAttribute("fill", colors.cos);
+                adjacentText.setAttribute("font-size", "12");
+                adjacentText.textContent = "المجاور = cos(θ)";
+                svg.appendChild(adjacentText);
+                
+                const hypotenuseText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                hypotenuseText.setAttribute("x", (centerX + pointX)/2 - 20);
+                hypotenuseText.setAttribute("y", (centerY + pointY)/2 - 20);
+                hypotenuseText.setAttribute("fill", colors.text);
+                hypotenuseText.setAttribute("font-size", "12");
+                hypotenuseText.textContent = "الوتر = 1";
+                svg.appendChild(hypotenuseText);
+            }
+        }
+
+        // رسم المثال العملي
+        function drawRealWorldExample() {
+            cancelAnimationFrame(exampleAnimationId);
+            exampleCtx.clearRect(0, 0, exampleWidth, exampleHeight);
+            
+            if (currentTab === 'building') {
+                drawBuildingExample();
+            } else if (currentTab === 'pendulum') {
+                drawPendulumExample();
+            } else if (currentTab === 'waves') {
+                drawWaveExample();
+            }
+        }
+
+        // رسم مثال المبنى
+        function drawBuildingExample() {
+            const distance = parseInt(distanceSlider.value);
+            const height = distance * Math.tan(angle);
+            
+            // رسم الأرض
+            exampleCtx.fillStyle = colors.ground;
+            exampleCtx.fillRect(0, exampleHeight - 50, exampleWidth, 50);
+            
+            // رسم الشخص
+            exampleCtx.fillStyle = '#000';
+            exampleCtx.beginPath();
+            exampleCtx.arc(100, exampleHeight - 70, 10, 0, Math.PI * 2);
+            exampleCtx.fill();
+            
+            // رسم المبنى
+            const buildingX = 100 + distance * 5;
+            const buildingHeight = Math.min(height * 5, exampleHeight - 100);
+            
+            exampleCtx.fillStyle = colors.building;
+            exampleCtx.fillRect(buildingX - 30, exampleHeight - 50 - buildingHeight, 60, buildingHeight);
+            
+            // رسم خط النظر
+            exampleCtx.strokeStyle = colors.angle;
+            exampleCtx.lineWidth = 2;
+            exampleCtx.beginPath();
+            exampleCtx.moveTo(100, exampleHeight - 70);
+            exampleCtx.lineTo(buildingX, exampleHeight - 50 - buildingHeight);
+            exampleCtx.stroke();
+            
+            // رسم المسافة
+
+// (الجزء السابق من الكود موجود هنا...)
+
+
+
+
+
+            // رسم خط المسافة الأفقية (من الشخص إلى قاعدة المبنى)
+            exampleCtx.strokeStyle = colors.cos;
+            exampleCtx.setLineDash([5, 5]); // خط متقطع
+            exampleCtx.beginPath();
+            exampleCtx.moveTo(100, exampleHeight - 50); // بداية من عند الشخص
+            exampleCtx.lineTo(buildingX, exampleHeight - 50); // نهاية عند قاعدة المبنى
+            exampleCtx.stroke();
+            exampleCtx.setLineDash([]); // إعادة تعيين الخط المتصل
+
+            // إضافة نص المسافة
+            exampleCtx.fillStyle = colors.cos;
+            exampleCtx.font = '14px Arial';
+            exampleCtx.textAlign = 'center';
+            exampleCtx.fillText(
+                `المسافة: ${distance} متر`, 
+                (100 + buildingX) / 2, // منتصف المسافة
+                exampleHeight - 30 // فوق الأرض بقليل
+            );
+
+            // رسم خط الارتفاع العمودي (جانب المبنى)
+            exampleCtx.strokeStyle = colors.sin;
+            exampleCtx.setLineDash([5, 3]); // نمط متقطع مختلف
+            exampleCtx.beginPath();
+            exampleCtx.moveTo(buildingX, exampleHeight - 50); // من قاعدة المبنى
+            exampleCtx.lineTo(buildingX, exampleHeight - 50 - buildingHeight); // إلى قمة المبنى
+            exampleCtx.stroke();
+            exampleCtx.setLineDash([]);
+
+            // إضافة نص الارتفاع
+            exampleCtx.fillStyle = colors.sin;
+            exampleCtx.fillText(
+                `الارتفاع: ${height.toFixed(1)} متر`,
+                buildingX + 40, // إلى يمين المبنى
+                exampleHeight - 50 - buildingHeight / 2 // منتصف ارتفاع المبنى
+            );
+            
+            
+            
+        // رسم الزاوية
+        exampleCtx.strokeStyle = colors.angle;
+        exampleCtx.lineWidth = 1;
+        exampleCtx.beginPath();
+        exampleCtx.arc(100, exampleHeight - 70, 40, 0, angle, angle > Math.PI);
+        exampleCtx.stroke();
+        
+        // نص الزاوية
+        exampleCtx.fillStyle = colors.angle;
+        exampleCtx.font = '14px Arial';
+        exampleCtx.fillText(`θ = ${angle.toFixed(2)} راديان`, 50, exampleHeight - 80);
+        
+        // نص الارتفاع
+        exampleCtx.fillStyle = colors.building;
+        exampleCtx.fillText(`الارتفاع: ${height.toFixed(2)} متر`, buildingX - 50, exampleHeight - 60 - buildingHeight);
+        
+        // خط المسافة
+        exampleCtx.strokeStyle = colors.cos;
+        exampleCtx.setLineDash([5, 5]);
+        exampleCtx.beginPath();
+        exampleCtx.moveTo(100, exampleHeight - 50);
+        exampleCtx.lineTo(buildingX, exampleHeight - 50);
+        exampleCtx.stroke();
+        exampleCtx.setLineDash([]);
+        
+        exampleCtx.fillStyle = colors.cos;
+        exampleCtx.fillText(`المسافة: ${distance} متر`, (100 + buildingX)/2 - 30, exampleHeight - 30);
+    }
+
+    // رسم مثال البندول
+    function drawPendulumExample() {
+        const length = parseFloat(pendulumLength.value);
+        const period = 2 * Math.PI * Math.sqrt(length / 9.8);
+        const angleAmplitude = Math.PI / 4; // 45 درجة كحد أقصى
+        
+        const centerX = exampleWidth / 2;
+        const centerY = 50;
+        const pendulumLengthPx = length * 80;
+        
+        let pendulumAngle;
+        if (isAnimating) {
+            pendulumAngle = angleAmplitude * Math.cos(2 * Math.PI * time / (period * 60));
+        } else {
+            pendulumAngle = angleAmplitude * Math.cos(angle * 2);
+        }
+        
+        const bobX = centerX + pendulumLengthPx * Math.sin(pendulumAngle);
+        const bobY = centerY + pendulumLengthPx * Math.cos(pendulumAngle);
+        
+        // رسم نقطة التعليق
+        exampleCtx.fillStyle = '#000';
+        exampleCtx.beginPath();
+        exampleCtx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+        exampleCtx.fill();
+        
+        // رسم الخيط
+        exampleCtx.strokeStyle = '#fff';
+        exampleCtx.lineWidth = 2;
+        exampleCtx.beginPath();
+        exampleCtx.moveTo(centerX, centerY);
+        exampleCtx.lineTo(bobX, bobY);
+        exampleCtx.stroke();
+        
+        // رسم الكرة
+        exampleCtx.fillStyle = colors.angle;
+        exampleCtx.beginPath();
+        exampleCtx.arc(bobX, bobY, 15, 0, Math.PI * 2);
+        exampleCtx.fill();
+        
+        // رسم مسار الحركة
+        exampleCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+        exampleCtx.beginPath();
+        exampleCtx.arc(centerX, centerY, pendulumLengthPx, Math.PI/2 - angleAmplitude, Math.PI/2 + angleAmplitude);
+        exampleCtx.stroke();
+        
+        // رسم الزاوية
+        exampleCtx.strokeStyle = colors.angle;
+        exampleCtx.beginPath();
+        exampleCtx.arc(centerX, centerY, 30, Math.PI/2, Math.PI/2 - pendulumAngle, pendulumAngle > 0);
+        exampleCtx.stroke();
+        
+        // معلومات البندول
+        exampleCtx.fillStyle = colors.text;
+        exampleCtx.font = '14px Arial';
+        exampleCtx.fillText(`طول البندول: ${length} م`, 20, 30);
+        exampleCtx.fillText(`الزمن الدوري: ${period.toFixed(2)} ثانية`, 20, 60);
+        exampleCtx.fillText(`الزاوية الحالية: ${(pendulumAngle * 180/Math.PI).toFixed(1)}°`, 20, 90);
+        
+        // تحريك البندول إذا كانت الحركة مفعلة
+        if (isAnimating) {
+            exampleAnimationId = requestAnimationFrame(drawRealWorldExample);
+        }
+    }
+
+    // رسم مثال الموجات
+    function drawWaveExample() {
+        const frequency = 2;
+        const amplitude = 50;
+        
+        exampleCtx.strokeStyle = colors.sin;
+        exampleCtx.lineWidth = 3;
+        exampleCtx.beginPath();
+        
+        for (let x = 0; x < exampleWidth; x++) {
+            const y = exampleHeight/2 - amplitude * Math.sin(frequency * (x * 0.05 + angle * 2));
+            
+            if (x === 0) {
+                exampleCtx.moveTo(x, y);
+            } else {
+                exampleCtx.lineTo(x, y);
+            }
+        }
+        
+        exampleCtx.stroke();
+        
+        // إضافة تأثير توهج
+        exampleCtx.shadowColor = colors.sin;
+        exampleCtx.shadowBlur = 10;
+        exampleCtx.stroke();
+        exampleCtx.shadowBlur = 0;
+        
+        // معلومات الموجة
+        exampleCtx.fillStyle = colors.text;
+        exampleCtx.font = '14px Arial';
+        exampleCtx.fillText('تمثيل موجة صوتية أو ضوئية', 20, 30);
+        exampleCtx.fillText(`المعادلة: y = ${amplitude} × sin(${frequency}x + ${angle.toFixed(2)})`, 20, 60);
+        
+        if (isAnimating) {
+            exampleAnimationId = requestAnimationFrame(drawRealWorldExample);
+        }
+    }
+
+    // تحديث مثال المبنى
+    function updateBuildingExample() {
+        const distance = parseInt(distanceSlider.value);
+        const height = distance * Math.tan(angle);
+        buildingResult.innerHTML = `الارتفاع المحسوب: <strong>${height.toFixed(2)}</strong> متر`;
+        drawRealWorldExample();
+    }
+
+    // تحديث مثال البندول
+    function updatePendulumExample() {
+        const length = parseFloat(pendulumLength.value);
+        const period = 2 * Math.PI * Math.sqrt(length / 9.8);
+        pendulumResult.innerHTML = `الزمن الدوري: <strong>${period.toFixed(2)}</strong> ثانية`;
+        drawRealWorldExample();
+    }
+
+    // تحديث التحويل بين الراديان والدرجات
+    function updateAngleConversion() {
+        const degrees = angle * 180 / Math.PI;
+        conversionResult.textContent = `${angle.toFixed(2)} راديان = ${degrees.toFixed(2)} درجة`;
+    }
+
+    // تحديث علامة الزاوية في المثال العملي
+    function updateAngleMark() {
+        if (currentTab === 'building') {
+            const markX = 100 + 40 * Math.cos(angle/2);
+            const markY = exampleHeight - 70 - 40 * Math.sin(angle/2);
+            
+            angleMark.style.left = `${markX - 15}px`;
+            angleMark.style.top = `${markY - 15}px`;
+            angleMark.textContent = 'θ';
+            angleMark.style.display = 'block';
+        } else {
+            angleMark.style.display = 'none';
+        }
+    }
+
+    // تعيين الدالة النشطة
+    function setActiveFunction(func) {
+        currentFunc = func;
+        sinBtn.classList.remove('active');
+        cosBtn.classList.remove('active');
+        tanBtn.classList.remove('active');
+        
+        if (func === 'sin') sinBtn.classList.add('active');
+        if (func === 'cos') cosBtn.classList.add('active');
+        if (func === 'tan') tanBtn.classList.add('active');
+        
+        drawGraph();
+        drawUnitCircle();
+    }
+
+    // تحديث قيمة الزاوية المعروضة
+    function updateAngleValue() {
+        angleValue.textContent = angle.toFixed(2);
+    }
+
+    // دورة الحركة
+    function animate() {
+        angle += 0.02;
+        if (angle >= 2 * Math.PI) angle = 0;
+        
+        angleSlider.value = angle;
+        updateAngleValue();
+        
+        drawGraph();
+        drawUnitCircle();
+        drawRealWorldExample();
+        updateAngleMark();
+        updateBuildingExample();
+        updateAngleConversion();
+        
+        if (isAnimating) {
+            animationId = requestAnimationFrame(animate);
+        }
+    }
+
+    // بدء المحاكاة
+    init();
+</script>
+</body> 
+</html> 

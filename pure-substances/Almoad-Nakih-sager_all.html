@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>المختبر الافتراضي للمواد النقية</title>
+    <style>
+        :root {
+            --container-color: rgba(200, 200, 200, 0.8);
+            --stand-color: rgba(150, 75, 0, 0.8);
+            --burner-color: rgba(70, 70, 70, 0.9);
+            --flame-color: rgba(255, 100, 0, 0.8);
+            --sugar-color: rgba(255, 255, 255, 0.9);
+            --steam-color: rgba(255, 255, 255, 0.7);
+            --result-color: rgba(255, 200, 200, 0.9);
+            --tube-color: rgba(200, 230, 255, 0.7);
+            --tube-b-color: rgba(200, 255, 230, 0.7);
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #sidebar {
+            width: 150px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        #sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ecf0f1;
+        }
+        
+        .tool {
+            width: 150px;
+            height: 150px;
+            margin: 10px auto;
+            cursor: grab;
+            background-color: transparent;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            box-sizing: border-box;
+            user-select: none;
+            position: relative;
+            transition: transform 0.2s;
+            touch-action: none;
+        }
+        
+        .tool:active {
+            transform: scale(0.95);
+        }
+        
+        .tool img {
+            max-width: 100%;
+            max-height: 100%;
+            background-color: transparent;
+            pointer-events: none;
+        }
+        
+        .tool-name {
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            color: #ecf0f1;
+            pointer-events: none;
+        }
+        
+        #workspace {
+            flex-grow: 1;
+            background-color: #ecf0f1;
+            position: relative;
+            overflow: hidden;
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px),
+                              linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            touch-action: none;
+        }
+
+        .explanation-box {
+            position: absolute;
+            top: 50px;
+            left: 20px;
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 14px;
+            max-width: 250px;
+            border-left: 5px solid #27ae60;
+        }
+        
+        .lab-item {
+            position: absolute;
+            user-select: none;
+            cursor: move;
+            background-color: transparent;
+            transition: transform 0.2s;
+            touch-action: none;
+        }
+        
+        .lab-item:active {
+            transform: scale(1.05);
+            z-index: 100;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background-color: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+            touch-action: manipulation;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            min-width: 100px;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+        }
+        
+        #stop-btn {
+            background-color: #f39c12;
+        }
+        
+        #cool-btn {
+            background-color: #2ecc71;
+        }
+        
+        #conclude-btn {
+            background-color: #9b59b6;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #stop-btn:hover {
+            background-color: #d35400;
+        }
+        
+        #cool-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        #conclude-btn:hover {
+            background-color: #8e44ad;
+        }
+        
+        #message-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 80%;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            border-left: 5px solid #3498db;
+        }
+        
+.tube-a {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+        background-image: url('./chemix\ 11.png'); /* استبدل بالمسار الصحيح للصورة */
+    background-size: cover; /* لجعل الصورة تغطي العنصر */
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column-reverse;
+    overflow: hidden;
+    border: 2px solid #999; /* يمكنك إزالته إذا لم تريده */
+}
+
+        
+        .tube-b {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+        background-image: url('./chemix\ 11.png'); /* استبدل بالمسار الصحيح للصورة */
+    background-size: cover; /* لجعل الصورة تغطي العنصر */
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column-reverse;
+    overflow: hidden;
+    border: 2px solid #999; /* يمكنك إزالته إذا لم تريده */
+}
+
+        
+        .tube-content {
+            width: 100%;
+            height: 0;
+            transition: height 0.5s;
+        }
+        
+        .tube-a .tube-content {
+            background-color: var(--sugar-color);
+        }
+        
+        .tube-b .tube-content {
+            background-color: transparent;
+        }
+        
+        .tube-stopper {
+            position: absolute;
+            width: 100%;
+            height: 15px;
+            background-color: #c00;
+            top: -15px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .black-bubble {
+    fill: wheat; /* لون الفقاعة أسود */
+    opacity: 0.8; /* الشفافية */
+    transition: transform 2s linear; /* تأثير الحركة */
+}
+ 
+       .stand-a {
+    position: absolute;
+    width: 200px;
+    height: 400px;
+    background-image: url('./chemix\ 7.jpg'); /* استبدل بالمسار الصحيح للصورة */
+    background-size: cover; /* لجعل الصورة تغطي العنصر */
+    border-radius: 5px;
+    bottom: 8px;
+    left: 40%;
+    transform: translateX(-50%);
+}
+
+.stand-b {
+    position: absolute;
+    width: 200px;
+    height: 400px;
+    background-image: url('./chemix\ 15.jpg');
+     /* استبدل بالمسار الصحيح للصورة */
+    background-size: cover; /* لجعل الصورة تغطي العنصر */
+    border-radius: 5px;
+    bottom: 2px;
+    left: 60%;
+    transform: translateX(-50%);
+}
+
+        
+        .stand-legs {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stand-leg {
+            width: 10px;
+            height: 100%;
+            background-color: var(--stand-color);
+            border-radius: 3px;
+        }
+        
+        .burner {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background-color: var(--burner-color);
+            border-radius: 5px 5px 0 0;
+            bottom: 20px;
+            left: 40%;
+            transform: translateX(-50%);
+        }
+        
+        .flame {
+            position: absolute;
+            width: 40px;
+            height: 0;
+            background-color: var(--flame-color);
+            border-radius: 50% 50% 20% 20%;
+            bottom: 20px;
+            left: 40%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px var(--flame-color);
+            transition: height 0.5s;
+            opacity: 0;
+        }
+        
+        .flame.on {
+            height: 60px;
+            opacity: 1;
+            animation: flicker 0.5s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0% { height: 60px; width: 40px; }
+            50% { height: 65px; width: 35px; }
+            100% { height: 55px; width: 45px; }
+        }
+        
+        .sugar-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: var(--sugar-color);
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+        
+        .bubble {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: bubbleRise 2s linear forwards;
+        }
+        
+        @keyframes bubbleRise {
+            0% { transform: translateY(0); opacity: 0.7; }
+            70% { opacity: 0.5; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        
+        .steam {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: var(--steam-color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: steamRise 3s linear forwards;
+        }
+        
+        @keyframes steamRise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0.7; }
+            50% { opacity: 0.5; transform: translateY(-30px) scale(1); }
+            100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+        }
+        
+        .result-message {
+            position: absolute;
+            background-color: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 14px;
+            z-index: 20;
+            display: none;
+        }
+        
+        #heating-message {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        #cooling-message {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .conclusion-table {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 14px;
+            max-width: 90%;
+            display: none;
+            border-left: 5px solid #3498db;
+        }
+        
+        .conclusion-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .conclusion-table th, .conclusion-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .conclusion-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .conclusion-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 80px;
+            }
+            
+            .tool {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .tool-name {
+                font-size: 10px;
+            }
+            
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+            
+            .tube-a, .tube-b {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .connector-tube {
+                width: 100px;
+                bottom: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div id="sidebar">
+            <h3>أدوات المختبر</h3>
+            <div class="tool" draggable="true" data-type="tube-a" title="اسحبني إلى مساحة العمل">
+              <img src="./chemix 11.png" alt="tub a" style="width: 200px; height: 200px;">
+
+
+                <div class="tool-name">أنبوب اختبار (أ)</div>
+            </div>
+            <div class="tool" draggable="true" data-type="tube-b" title="اسحبني إلى مساحة العمل">
+                             <img src="./chemix 11.png" alt="tub b" style="width: 200px; height: 200px;">
+
+                <div class="tool-name">أنبوب اختبار (ب)</div>
+            </div>
+ <div class="tool" draggable="true" data-type="connector" title="اسحبني إلى مساحة العمل">
+    <svg width="300" height="100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#a1c4fd; stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#c2e9fb; stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <path d="M 10 50 H 290 
+                  Q 300 50, 290 45 
+                  H 10 
+                  Q 0 50, 10 55 
+                  Q 0 60, 10 65 
+                  Q 20 70, 10 75 
+                  Q 0 80, 10 85 
+                  M 290 50 
+                  Q 300 50, 290 45 
+                  Q 300 55, 290 60 
+                  Q 300 65, 290 70 
+                  Q 300 75, 290 80" 
+              fill="url(#gradient)" stroke="#007bff" stroke-width="2"/>
+    </svg>
+    <div class="tool-name">أنبوب توصيل</div>
+</div>
+
+            <div class="tool" draggable="true" data-type="stand-a" title="اسحبني إلى مساحة العمل">
+                <img src="./chemix 7.jpg" alt="حامل أ">
+                <div class="tool-name">حامل (أ)</div>
+            </div>
+            <div class="tool" draggable="true" data-type="stand-b" title="اسحبني إلى مساحة العمل">
+                <img src="./chemix 15.jpg" alt="حامل أ">
+                <div class="tool-name">حامل (ب)</div>
+            </div>
+            <div class="tool" draggable="true" data-type="burner" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSIzMCIgeT0iODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxNSIgcng9IjUiIHJ5PSI1IiBmaWxsPSIjNDQ0Ii8+PGNpcmNsZSBjeD0iNTAiIGN5PSI2MCIgcj0iMjAiIGZpbGw9IiM0NDQiLz48L3N2Zz4=" alt="موقد بنزين">
+                <div class="tool-name">موقد بنزين</div>
+            </div>
+        </div>
+        
+        <div id="workspace">
+            <div id="message-box"></div>
+            
+            <div class="explanation-box">
+                <h3>شرح تجربة المواد النقية</h3>
+                <p>
+                    في هذه التجربة، نقوم بدراسة خصائص المادة النقية (السكر) عند تعرضها للحرارة.
+                </p>
+                <p>
+                    عند تسخين السكر، يذوب ويتحول إلى سائل، ولكن لا يتحلل إلى مواد أبسط لأنه مادة نقية.
+                </p>
+                <p>
+                    الهدف من التجربة هو إثبات أن المواد النقية لا يمكن تحليلها إلى مواد أبسط بالطرق الفيزيائية أو الكيميائية العادية.
+                </p>
+            </div>
+            
+            <div id="controls">
+                <button id="add-sugar-btn" class="control-btn">إضافة سكر</button>
+                <button id="simulate-btn" class="control-btn">بدء التسخين</button>
+                <button id="cool-btn" class="control-btn" disabled>تبريد الأنبوب</button>
+                <button id="conclude-btn" class="control-btn" disabled>استنتاج التجربة</button>
+                <button id="stop-btn" class="control-btn" disabled>إيقاف المحاكاة</button>
+                <button id="reset-btn" class="control-btn">إعادة الضبط</button>
+            </div>
+            
+            <div id="heating-message" class="result-message">لقد تم تسخين المادة</div>
+            <div id="cooling-message" class="result-message">لقد تم تبريد المادة بنجاح</div>
+            
+            <div class="conclusion-table">
+                <h3>استنتاج التجربة: خصائص المادة النقية</h3>
+                <table>
+                    <tr>
+                        <th>الخاصية</th>
+                        <th>قبل التسخين</th>
+                        <th>بعد التسخين</th>
+                    </tr>
+                    <tr>
+                        <td>الشكل</td>
+                        <td>بلورات صلبة</td>
+                        <td>سائل لزج</td>
+                    </tr>
+                    <tr>
+                        <td>اللون</td>
+                        <td>أبيض</td>
+                        <td>بني فاتح</td>
+                    </tr>
+                    <tr>
+                        <td>التركيب</td>
+                        <td>سكر نقي</td>
+                        <td>سكر منصهر (نفس التركيب)</td>
+                    </tr>
+                    <tr>
+                        <td>قابلية التحليل</td>
+                        <td>لا يمكن تحليله</td>
+                        <td>لا يمكن تحليله</td>
+                    </tr>
+                </table>
+                <p>الملاحظة: المادة النقية (السكر) لا تتحلل إلى مواد أبغم عند التسخين، بل تتغير حالتها الفيزيائية فقط من صلبة إلى سائلة. هذا يدل على أن المواد النقية تحافظ على تركيبها الكيميائي حتى عند تعرضها للتغيرات الفيزيائية.</p>
+            </div>
+            
+            <div id="tooltip" class="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const workspace = document.getElementById('workspace');
+            const tools = document.querySelectorAll('.tool');
+            const messageBox = document.getElementById('message-box');
+            const tooltip = document.getElementById('tooltip');
+            
+            let draggedItem = null;
+            let offsetX, offsetY;
+            let items = {
+                tubeA: null,
+                tubeB: null,
+                connector: null,
+                standA: null,
+                standB: null,
+                burner: null
+            };
+            
+            let experimentState = {
+                hasSugar: false,
+                isHeating: false,
+                isCooling: false,
+                isConcluded: false,
+                sugarLevel: 0
+            };
+            
+            let simulationInterval = null;
+            let heatingTimeout = null;
+            let coolingTimeout = null;
+            let bubbleInterval= null;
+            // إعداد أدوات السحب والإفلات
+            tools.forEach(tool => {
+                tool.addEventListener('dragstart', function(e) {
+                    draggedItem = this.cloneNode(true);
+                    draggedItem.classList.add('lab-item');
+                    draggedItem.style.position = 'absolute';
+                    
+                    const rect = this.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    
+                    e.dataTransfer.setData('text/plain', '');
+                    this.style.opacity = '0.4';
+                });
+                
+                tool.addEventListener('touchstart', handleTouchStart, { passive: false });
+                
+                // إضافة تلميحات
+                tool.addEventListener('mouseenter', showTooltip);
+                tool.addEventListener('mouseleave', hideTooltip);
+                tool.addEventListener('touchstart', function(e) {
+                    showTooltip(e);
+                    setTimeout(hideTooltip, 2000);
+                }, { passive: false });
+            });
+            
+            function showTooltip(e) {
+                const tool = e.currentTarget;
+                const title = tool.getAttribute('title');
+                if (!title) return;
+                
+                const rect = tool.getBoundingClientRect();
+                tooltip.textContent = title;
+                tooltip.style.left = `${rect.left + rect.width/2}px`;
+                tooltip.style.top = `${rect.top - 30}px`;
+                tooltip.classList.add('show');
+            }
+            
+            function hideTooltip() {
+                tooltip.classList.remove('show');
+            }
+            
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = e.target.closest('.tool');
+                
+                if (!target) return;
+                
+                draggedItem = target.cloneNode(true);
+                draggedItem.classList.add('lab-item');
+                draggedItem.style.position = 'absolute';
+                
+                const rect = target.getBoundingClientRect();
+                offsetX = touch.clientX - rect.left;
+                offsetY = touch.clientY - rect.top;
+                
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+                workspace.appendChild(draggedItem);
+                
+                const type = draggedItem.getAttribute('data-type');
+                const id = `item-${Date.now()}`;
+                draggedItem.setAttribute('data-id', id);
+                
+                if (type === 'tube-a') {
+                    items.tubeA = { id, element: draggedItem };
+                    setupTubeA(draggedItem);
+                }
+                else if (type === 'tube-b') {
+                    items.tubeB = { id, element: draggedItem };
+                    setupTubeB(draggedItem);
+                }
+                else if (type === 'connector') {
+                    items.connector = { id, element: draggedItem };
+                    setupConnector(draggedItem);
+                }
+                else if (type === 'stand-a') {
+                    items.standA = { id, element: draggedItem };
+                    setupStandA(draggedItem);
+                }
+                else if (type === 'stand-b') {
+                    items.standB = { id, element: draggedItem };
+                    setupStandB(draggedItem);
+                }
+                else if (type === 'burner') {
+                    items.burner = { id, element: draggedItem };
+                    setupBurner(draggedItem);
+                }
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+                target.style.opacity = '0.4';
+            }
+            
+            function handleTouchMove(e) {
+                if (!draggedItem) return;
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+            }
+            
+            function handleTouchEnd() {
+                if (!draggedItem) return;
+                
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+                
+                const tool = document.querySelector('.tool[data-type="' + draggedItem.getAttribute('data-type') + '"]');
+                if (tool) tool.style.opacity = '1';
+                
+                setupDraggable(draggedItem);
+                draggedItem = null;
+            }
+            
+            workspace.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            workspace.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                if (draggedItem) {
+                    const x = e.clientX - offsetX - workspace.getBoundingClientRect().left;
+                    const y = e.clientY - offsetY - workspace.getBoundingClientRect().top;
+                    
+                    draggedItem.style.left = `${x}px`;
+                    draggedItem.style.top = `${y}px`;
+                    workspace.appendChild(draggedItem);
+                    
+                    const type = draggedItem.getAttribute('data-type');
+                    const id = `item-${Date.now()}`;
+                    draggedItem.setAttribute('data-id', id);
+                    
+                    if (type === 'tube-a') {
+                        items.tubeA = { id, element: draggedItem };
+                        setupTubeA(draggedItem);
+                    }
+                    else if (type === 'tube-b') {
+                        items.tubeB = { id, element: draggedItem };
+                        setupTubeB(draggedItem);
+                    }
+                    else if (type === 'connector') {
+                        items.connector = { id, element: draggedItem };
+                        setupConnector(draggedItem);
+                    }
+                    else if (type === 'stand-a') {
+                        items.standA = { id, element: draggedItem };
+                        setupStandA(draggedItem);
+                    }
+                    else if (type === 'stand-b') {
+                        items.standB = { id, element: draggedItem };
+                        setupStandB(draggedItem);
+                    }
+                    else if (type === 'burner') {
+                        items.burner = { id, element: draggedItem };
+                        setupBurner(draggedItem);
+                    }
+                    
+                    const tool = document.querySelector('.tool[data-type="' + type + '"]');
+                    if (tool) tool.style.opacity = '1';
+                    
+                    setupDraggable(draggedItem);
+                    draggedItem = null;
+                }
+            });
+            
+            function setupTubeA(element) {
+                const tube = document.createElement('div');
+                tube.className = 'tube-a';
+                element.appendChild(tube);
+                
+                const content = document.createElement('div');
+                content.className = 'tube-content';
+                tube.appendChild(content);
+                
+                const stopper = document.createElement('div');
+                stopper.className = 'tube-stopper';
+                tube.appendChild(stopper);
+            }
+            
+            function setupTubeB(element) {
+                const tube = document.createElement('div');
+                tube.className = 'tube-b';
+                element.appendChild(tube);
+                
+                const content = document.createElement('div');
+                content.className = 'tube-content';
+                tube.appendChild(content);
+            }
+            
+            function setupConnector(element) {
+                const connector = document.createElement('div');
+                connector.className = 'connector-tube';
+                element.appendChild(connector);
+            }
+            
+            function setupStandA(element) {
+                const stand = document.createElement('div');
+                stand.className = 'stand-a';
+                element.appendChild(stand);
+                
+                const legs = document.createElement('div');
+                legs.className = 'stand-legs';
+                
+                for (let i = 0; i < 2; i++) {
+                    const leg = document.createElement('div');
+                    leg.className = 'stand-leg';
+                    legs.appendChild(leg);
+                }
+                
+                element.appendChild(legs);
+            }
+            
+            function setupStandB(element) {
+                const stand = document.createElement('div');
+                stand.className = 'stand-b';
+                element.appendChild(stand);
+                
+                const legs = document.createElement('div');
+                legs.className = 'stand-legs';
+                
+                for (let i = 0; i < 2; i++) {
+                    const leg = document.createElement('div');
+                    leg.className = 'stand-leg';
+                    legs.appendChild(leg);
+                }
+                
+                element.appendChild(legs);
+            }
+            
+            function setupBurner(element) {
+                const burner = document.createElement('div');
+                burner.className = 'burner';
+                element.appendChild(burner);
+                
+                const flame = document.createElement('div');
+                flame.className = 'flame';
+                element.appendChild(flame);
+            }
+            
+            function setupDraggable(element) {
+                let isDragging = false;
+                let startX, startY, startLeft, startTop;
+                
+                element.addEventListener('mousedown', startDrag);
+                element.addEventListener('touchstart', startDragTouch, { passive: false });
+                
+                function startDrag(e) {
+                    if (experimentState.isHeating || experimentState.isCooling) return;
+                    e.stopPropagation();
+                    
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', stopDrag);
+                }
+                
+                function startDragTouch(e) {
+                    if (experimentState.isHeating || experimentState.isCooling) return;
+                    e.preventDefault();
+                    
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('touchmove', dragTouch, { passive: false });
+                    document.addEventListener('touchend', stopDrag);
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function dragTouch(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    const touch = e.touches[0];
+                    const dx = touch.clientX - startX;
+                    const dy = touch.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function stopDrag() {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                    element.style.zIndex = '1';
+                    
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('touchmove', dragTouch);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchend', stopDrag);
+                }
+            }
+            
+            document.getElementById('add-sugar-btn').addEventListener('click', function() {
+                if (!items.tubeA) {
+                    showMessage('الرجاء وضع أنبوب الاختبار (أ) أولاً');
+                    return;
+                }
+                
+                if (experimentState.hasSugar) {
+                    showMessage('تمت إضافة السكر بالفعل');
+                    return;
+                }
+                
+                experimentState.hasSugar = true;
+                experimentState.sugarLevel = 70;
+                
+                const tube = items.tubeA.element.querySelector('.tube-a');
+                const content = tube.querySelector('.tube-content');
+                content.style.height = `${experimentState.sugarLevel}%`;
+                
+                // إضافة جزيئات السكر
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'sugar-particle';
+                    particle.style.left = `${Math.random() * 80 + 10}%`;
+                    particle.style.bottom = `${Math.random() * experimentState.sugarLevel + 5}%`;
+                    content.appendChild(particle);
+                }
+                
+                showMessage('تمت إضافة السكر إلى أنبوب الاختبار (أ)');
+            });
+            
+            document.getElementById('simulate-btn').addEventListener('click', function() {
+                if (experimentState.isHeating || experimentState.isCooling) return;
+                
+                // التحقق من صحة الإعداد
+                if (!items.tubeA) {
+                    showMessage('الرجاء وضع أنبوب الاختبار (أ) أولاً');
+                    return;
+                }
+                
+                if (!items.tubeB) {
+                    showMessage('الرجاء وضع أنبوب الاختبار (ب) أولاً');
+                    return;
+                }
+                
+                if (!items.connector) {
+                    showMessage('الرجاء وضع أنبوب التوصيل أولاً');
+                    return;
+                }
+                
+                if (!items.standA) {
+                    showMessage('الرجاء وضع الحامل (أ) أولاً');
+                    return;
+                }
+                
+                if (!items.standB) {
+                    showMessage('الرجاء وضع الحامل (ب) أولاً');
+                    return;
+                }
+                
+                if (!items.burner) {
+                    showMessage('الرجاء وضع الموقد أولاً');
+                    return;
+                }
+                
+                if (!experimentState.hasSugar) {
+                    showMessage('الرجاء إضافة السكر إلى أنبوب الاختبار (أ)');
+                    return;
+                }
+                
+                // بدء المحاكاة
+                experimentState.isHeating = true;
+                showMessage('جارٍ تسخين السكر...');
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = true;
+                document.getElementById('stop-btn').disabled = false;
+                document.getElementById('cool-btn').disabled = true;
+                document.getElementById('conclude-btn').disabled = true;
+                
+                // إشعال الموقد
+                const flame = items.burner.element.querySelector('.flame');
+                flame.classList.add('on');
+                
+                // بدء عملية التسخين
+                const tubeA = items.tubeA.element.querySelector('.tube-a');
+                const tubeB = items.tubeB.element.querySelector('.tube-b');
+                const contentA = tubeA.querySelector('.tube-content');
+                const contentB = tubeB.querySelector('.tube-content');
+                
+                // تغيير لون السكر عند التسخين
+                let colorChange = setInterval(() => {
+                    const currentColor = getComputedStyle(contentA).backgroundColor;
+                    const newColor = lightenColor(currentColor, 1);
+                    contentA.style.backgroundColor = newColor;
+                }, 100);
+                
+                // إنشاء فقاعات عند التسخين
+                simulationInterval = setInterval(() => {
+                    createBubble(tubeA);
+                }, 300);
+                
+                // إنشاء فقاعات عند التسخين
+simulationInterval = setInterval(() => {
+    createBlackBubble(items.connector.element.querySelector('svg')); // إضافة الفقاعات إلى أنبوب التوصيل
+}, 300);
+
+// إنشاء بخار ينتقل عبر أنبوب التوصيل
+let steamInterval = setInterval(() => {
+    const steam = document.createElement('div');
+    steam.className = 'steam';
+    steam.style.left = `${Math.random() * 20 + 40}%`;
+    steam.style.bottom = `${experimentState.sugarLevel + 5}%`;
+    tubeA.appendChild(steam);
+    
+    setTimeout(() => {
+        // نقل البخار إلى الأنبوب الثاني
+        const steamB = document.createElement('div');
+        steamB.className = 'steam';
+        steamB.style.left = `${Math.random() * 20 + 40}%`;
+        steamB.style.bottom = '20%';
+        tubeB.appendChild(steamB);
+        
+        setTimeout(() => {
+            // إظهار محتوى السكر بعد 4 ثوانٍ
+            const sugarContent = document.createElement('div');
+            sugarContent.className = 'sugar-content';
+            sugarContent.style.position = 'absolute';
+            sugarContent.style.bottom = '0'; // يجتمع في الأسفل
+            sugarContent.style.width = '100%';
+            sugarContent.style.height = '20px'; // ارتفاع محتوى السكر
+            sugarContent.style.backgroundColor = '#d19a6a'; // لون بني مناسب
+            tubeB.appendChild(sugarContent); // إضافة محتوى السكر
+            
+            setTimeout(() => {
+                steamB.remove(); // إزالة البخار بعد فترة
+            }, 2000);
+            
+            steam.remove(); // إزالة البخار من الأنبوب الأول
+        }, 4000); // تأخير 4 ثوانٍ قبل ظهور محتوى السكر
+    }, 1000);
+}, 1000);
+                         
+                // إنهاء التسخين بعد 20 ثانية
+                heatingTimeout = setTimeout(() => {
+                    clearInterval(colorChange);
+                    clearInterval(steamInterval);
+                    finishHeating();
+                }, 20000);
+            });
+            
+            function lightenColor(rgb, percent) {
+                // تحويل لون RGB إلى قيم منفصلة
+                const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)/);
+                if (!match) return rgb;
+                
+                let r = parseInt(match[1]);
+                let g = parseInt(match[2]);
+                let b = parseInt(match[3]);
+                
+                // تفتيح اللون
+                r = Math.min(255, r + percent * 2.55);
+                g = Math.min(255, g + percent * 1.7);
+                b = Math.min(255, b + percent * 0.85);
+                
+                return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+            }
+            
+            function createBubble(container, color = 'rgba(255, 255, 255, 0.8)') {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.left = `${Math.random() * 80 + 10}%`;
+                bubble.style.bottom = `${Math.random() * 30 + 10}%`;
+                bubble.style.backgroundColor = color;
+                container.appendChild(bubble);
+                
+                setTimeout(() => {
+                    bubble.remove();
+                }, 2000);
+            }
+            
+            
+            
+            
+
+function createBlackBubble(container) {
+    const bubble = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    bubble.setAttribute("class", "black-bubble");
+    bubble.setAttribute("cx", "10"); // موضع البداية (x)
+    bubble.setAttribute("cy", "50"); // موضع البداية (y)
+    bubble.setAttribute("r", "4"); // نصف القطر
+    container.appendChild(bubble);
+
+    // تحريك الفقاعة
+    setTimeout(() => {
+        bubble.setAttribute("transform", "translate(280, 0)"); // التحريك إلى اليمين
+    }, 10);
+
+    // إزالة الفقاعة بعد التحرك
+    setTimeout(() => {
+        bubble.remove(); // إزالة الفقاعة
+    }, 2000);
+}
+
+// وظيفة لتبدأ تدفق الفقاعات
+function startBubbleFlow(container) {
+    bubbleInterval = setInterval(() => {
+        createBlackBubble(container);
+    }, 500); // التحكم في سرعة الفقاعات
+
+    // توقف تدفق الفقاعات بعد 4 ثوانٍ
+    setTimeout(() => {
+        clearInterval(bubbleInterval);
+    }, 4000);
+}
+            function finishHeating() {
+                experimentState.isHeating = false;
+                
+                // إطفاء الموقد
+                const flame = items.burner.element.querySelector('.flame');
+                flame.classList.remove('on');
+                
+                // إظهار رسالة التسخين
+                document.getElementById('heating-message').style.display = 'block';
+                
+                // تفعيل زر التبريد
+                document.getElementById('cool-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                
+                showMessage('تم تسخين السكر بالكامل، يمكنك الآن تبريد الأنبوب');
+            }
+            
+            document.getElementById('cool-btn').addEventListener('click', function() {
+                if (experimentState.isHeating || experimentState.isCooling) return;
+                
+                // بدء التبريد
+                experimentState.isCooling = true;
+                showMessage('جارٍ تبريد الأنبوب...');
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('cool-btn').disabled = true;
+                document.getElementById('stop-btn').disabled = false;
+                document.getElementById('conclude-btn').disabled = true;
+                
+                // تغيير لون السكر المنصهر إلى اللون الأصلي تدريجياً
+                const tubeA = items.tubeA.element.querySelector('.tube-a');
+                const contentA = tubeA.querySelector('.tube-content');
+                
+                let colorChange = setInterval(() => {
+                    const currentColor = getComputedStyle(contentA).backgroundColor;
+                    const newColor = darkenColor(currentColor, 1);
+                    contentA.style.backgroundColor = newColor;
+                    
+                    if (newColor === 'rgb(255, 255, 255)') {
+                        clearInterval(colorChange);
+                        finishCooling();
+                    }
+                }, 100);
+                
+                // إنهاء التبريد بعد 6 ثوانٍ
+                coolingTimeout = setTimeout(() => {
+                    clearInterval(colorChange);
+                    finishCooling();
+                }, 6000);
+            });
+            
+            function darkenColor(rgb, percent) {
+                // تحويل لون RGB إلى قيم منفصلة
+                const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)/);
+                if (!match) return rgb;
+                
+                let r = parseInt(match[1]);
+                let g = parseInt(match[2]);
+                let b = parseInt(match[3]);
+                
+                // تغميق اللون
+                r = Math.max(200, r - percent * 2.55);
+                g = Math.max(200, g - percent * 1.7);
+                b = Math.max(200, b - percent * 0.85);
+                
+                return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+            }
+            
+            function finishCooling() {
+                experimentState.isCooling = false;
+                
+                // إظهار رسالة التبريد
+                document.getElementById('cooling-message').style.display = 'block';
+                
+                // تفعيل زر الاستنتاج
+                document.getElementById('conclude-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                
+                showMessage('تم تبريد الأنبوب بنجاح، يمكنك الآن استنتاج نتائج التجربة');
+            }
+            
+            document.getElementById('conclude-btn').addEventListener('click', function() {
+                experimentState.isConcluded = true;
+                
+                // إظهار جدول الاستنتاج
+                document.querySelector('.conclusion-table').style.display = 'block';
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('conclude-btn').disabled = true;
+                
+                showMessage('تم استنتاج نتائج التجربة بنجاح');
+            });
+            
+            function stopSimulation() {
+                clearInterval(simulationInterval);
+                clearTimeout(heatingTimeout);
+                clearTimeout(coolingTimeout);
+                
+                // إطفاء الموقد
+                if (items.burner) {
+                    const flame = items.burner.element.querySelector('.flame');
+                    flame.classList.remove('on');
+                }
+                
+                // إخفاء الرسائل
+                document.getElementById('heating-message').style.display = 'none';
+                document.getElementById('cooling-message').style.display = 'none';
+                
+                // إخفاء جدول الاستنتاج
+                document.querySelector('.conclusion-table').style.display = 'none';
+                
+                // إعادة تعيين حالة التجربة
+                experimentState = {
+                    hasSugar: false,
+                    isHeating: false,
+                    isCooling: false,
+                    isConcluded: false,
+                    sugarLevel: 0
+                };
+                
+                // إعادة تعيين العناصر المرئية
+                if (items.tubeA) {
+                    const tube = items.tubeA.element.querySelector('.tube-a');
+                    const content = tube.querySelector('.tube-content');
+                    content.style.height = '0';
+                    content.innerHTML = '';
+                }
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                document.getElementById('cool-btn').disabled = true;
+                document.getElementById('conclude-btn').disabled = true;
+                
+                showMessage('تم إيقاف المحاكاة');
+            }
+            
+            document.getElementById('stop-btn').addEventListener('click', stopSimulation);
+            
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                stopSimulation();
+                
+                // إزالة جميع العناصر
+                document.querySelectorAll('.lab-item').forEach(item => item.remove());
+                
+                // إعادة تعيين المتغيرات
+                items = {
+                    tubeA: null,
+                    tubeB: null,
+                    connector: null,
+                    standA: null,
+                    standB: null,
+                    burner: null
+                };
+                
+                showMessage('تم إعادة ضبط التجربة');
+            });
+            
+            function showMessage(message) {
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

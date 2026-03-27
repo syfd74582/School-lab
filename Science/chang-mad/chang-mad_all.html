@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>المختبر الافتراضي لتغيرات المواد</title>
+    <style>
+        :root {
+            --container-color: rgba(200, 200, 200, 0.8);
+            --stand-color: rgba(150, 75, 0, 0.8);
+            --burner-color: rgba(70, 70, 70, 0.9);
+            --flame-color: rgba(255, 100, 0, 0.8);
+            --water-color: rgba(100, 150, 255, 0.6);
+            --salt-color: rgba(255, 255, 255, 0.9);
+            --steam-color: rgba(255, 255, 255, 0.7);
+            --result-color: rgba(255, 255, 200, 0.9);
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #sidebar {
+            width: 120px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        #sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ecf0f1;
+        }
+        
+        .tool {
+            width: 100px;
+            height: 100px;
+            margin: 10px auto;
+            cursor: grab;
+            background-color: transparent;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            box-sizing: border-box;
+            user-select: none;
+            position: relative;
+            transition: transform 0.2s;
+            touch-action: none;
+        }
+        
+        .tool:active {
+            transform: scale(0.95);
+        }
+        
+        .tool img {
+            max-width: 100%;
+            max-height: 100%;
+            background-color: transparent;
+            pointer-events: none;
+        }
+        
+        .tool-name {
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            color: #ecf0f1;
+            pointer-events: none;
+        }
+        
+        #workspace {
+            flex-grow: 1;
+            background-color: #ecf0f1;
+            position: relative;
+            overflow: hidden;
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px),
+                              linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            touch-action: none;
+        }
+
+        .explanation-box {
+            position: absolute;
+            top: 50px;
+            left: 20px;
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 14px;
+            max-width: 250px;
+            border-left: 5px solid #27ae60;
+        }
+        
+        .lab-item {
+            position: absolute;
+            user-select: none;
+            cursor: move;
+            background-color: transparent;
+            transition: transform 0.2s;
+            touch-action: none;
+        }
+        
+        .lab-item:active {
+            transform: scale(1.05);
+            z-index: 100;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background-color: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+            touch-action: manipulation;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            min-width: 100px;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #reset-btn {
+            background-color: #e74c3c;
+        }
+        
+        #stop-btn {
+            background-color: #f39c12;
+        }
+        
+        #cool-btn {
+            background-color: #2ecc71;
+        }
+        
+        #conclude-btn {
+            background-color: #9b59b6;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #stop-btn:hover {
+            background-color: #d35400;
+        }
+        
+        #cool-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        #conclude-btn:hover {
+            background-color: #8e44ad;
+        }
+        
+        #message-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 80%;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            border-left: 5px solid #3498db;
+        }
+        
+        .container {
+    position: absolute;
+    width: 150px;
+    height: 100px;
+    background-image: url('./chemix\ \(11\).png'); /* استبدل هذا بالرابط الصحيح للصورة */
+    background-size: cover;
+    border-radius: 5px 5px 20px 20px;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    overflow: hidden;
+}
+
+        
+        .stand {
+            position: absolute;
+            width: 120px;
+            height: 15px;
+            background-color: var(--stand-color);
+            border-radius: 5px;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .stand-legs {
+            position: absolute;
+            width: 100px;
+            height: 60px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stand-leg {
+            width: 10px;
+            height: 100%;
+            background-color: var(--stand-color);
+            border-radius: 3px;
+        }
+        
+        .burner {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background-color: var(--burner-color);
+            border-radius: 5px 5px 0 0;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .flame {
+            position: absolute;
+            width: 40px;
+            height: 0;
+            background-color: var(--flame-color);
+            border-radius: 50% 50% 20% 20%;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px var(--flame-color);
+            transition: height 0.5s;
+            opacity: 0;
+        }
+        
+        .flame.on {
+            height: 60px;
+            opacity: 1;
+            animation: flicker 0.5s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0% { height: 60px; width: 40px; }
+            50% { height: 65px; width: 35px; }
+            100% { height: 55px; width: 45px; }
+        }
+        
+        .water {
+            width: 100%;
+            height: 0;
+            background-color: var(--water-color);
+            transition: height 0.5s;
+        }
+        
+        .salt {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--salt-color);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .bubble {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: var(--water-color);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: bubbleRise 2s linear forwards;
+        }
+        
+        @keyframes bubbleRise {
+            0% { transform: translateY(0); opacity: 0.7; }
+            70% { opacity: 0.5; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        
+        .steam {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: var(--steam-color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: steamRise 3s linear forwards;
+        }
+        
+        @keyframes steamRise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0.7; }
+            50% { opacity: 0.5; transform: translateY(-30px) scale(1); }
+            100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+        }
+        
+        .result-message {
+            position: absolute;
+            background-color: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 14px;
+            z-index: 20;
+            display: none;
+        }
+        
+        #heating-message {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        #cooling-message {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .result-substance {
+            position: absolute;
+            width: 100%;
+            height: 0;
+            background-color: var(--result-color);
+            transition: height 0.5s;
+            bottom: 0;
+        }
+        
+        .conclusion-table {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 14px;
+            max-width: 90%;
+            display: none;
+            border-left: 5px solid #3498db;
+        }
+        
+        .conclusion-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .conclusion-table th, .conclusion-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .conclusion-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .conclusion-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 80px;
+            }
+            
+            .tool {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .tool-name {
+                font-size: 10px;
+            }
+            
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+            
+            .container {
+                width: 120px;
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div id="sidebar">
+            <h3>أدوات المختبر</h3>
+            <div class="tool" draggable="true" data-type="container" title="اسحبني إلى مساحة العمل">
+                <img src="" alt="إناء">
+                <div class="tool-name">إناء ألمنيوم</div>
+            </div>
+            <div class="tool" draggable="true" data-type="stand" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSIyMCIgeT0iNzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIxMCIgcng9IjUiIHJ5PSI1IiBmaWxsPSIjOTYzIi8+PHJlY3QgeD0iMzAiIHk9IjMwIiB3aWR0aD0iMTAiIGhlaWdodD0iNDAiIHJ4PSIyIiByeT0iMiIgZmlsbD0iIzk2MyIvPjxyZWN0IHg9IjYwIiB5PSIzMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjQwIiByeD0iMiIgcnk9IjIiIGZpbGw9IiM5NjMiLz48L3N2Zz4=" alt="ساق زجاجية">
+                <div class="tool-name">ساق زجاجية</div>
+            </div>
+            <div class="tool" draggable="true" data-type="burner" title="اسحبني إلى مساحة العمل">
+                <img src="./تنزيل (4).png" alt="موقد بنزين">
+                <div class="tool-name">موقد بنزين</div>
+            </div>
+        </div>
+        
+        <div id="workspace">
+            <div id="message-box"></div>
+            
+            <div class="explanation-box">
+                <h3>شرح تجربة تغيرات المواد</h3>
+                <p>
+                    في هذه التجربة، نقوم بدراسة التغيرات التي تطرأ على الملح عند إذابته في الماء ثم تبخير المحلول.
+                </p>
+                <p>
+                    عند تسخين المحلول الملحي، يتبخر الماء تاركًا الملح في الإناء. ثم عند تبريد الإناء، يمكننا ملاحظة خصائص الملح المتبقي.
+                </p>
+                <p>
+                    الهدف من التجربة هو مقارنة خصائص الملح الأصلي قبل وبعد عملية التبخير.
+                </p>
+            </div>
+            
+            <div id="controls">
+                <button id="add-water-btn" class="control-btn">إضافة ماء</button>
+                <button id="add-salt-btn" class="control-btn">إضافة ملح</button>
+                <button id="simulate-btn" class="control-btn">بدء التسخين</button>
+                <button id="cool-btn" class="control-btn" disabled>تبريد الإناء</button>
+                <button id="conclude-btn" class="control-btn" disabled>استنتاج التجربة</button>
+                <button id="stop-btn" class="control-btn" disabled>إيقاف المحاكاة</button>
+                <button id="reset-btn" class="control-btn">إعادة الضبط</button>
+            </div>
+            
+            <div id="heating-message" class="result-message">لقد تم تسخين المادة</div>
+            <div id="cooling-message" class="result-message">لقد تم تبريد المادة بنجاح</div>
+            
+            <div class="conclusion-table">
+                <h3>استنتاج التجربة: مقارنة بين الملح الأصلي والمادة المتبقية</h3>
+                <table>
+                    <tr>
+                        <th>الخاصية</th>
+                        <th>الملح الأصلي</th>
+                        <th>المادة المتبقية</th>
+                    </tr>
+                    <tr>
+                        <td>الشكل</td>
+                        <td>حبيبات صغيرة</td>
+                        <td>بلورات صغيرة</td>
+                    </tr>
+                    <tr>
+                        <td>اللون</td>
+                        <td>أبيض</td>
+                        <td>أبيض</td>
+                    </tr>
+                    <tr>
+                        <td>الطعم</td>
+                        <td>مالح</td>
+                        <td>مالح</td>
+                    </tr>
+                    <tr>
+                        <td>الرائحة</td>
+                        <td>لا رائحة</td>
+                        <td>لا رائحة</td>
+                    </tr>
+                    <tr>
+                        <td>الحالة</td>
+                        <td>صلب</td>
+                        <td>صلب</td>
+                    </tr>
+                </table>
+                <p>الملاحظة: لم يتغير الملح كيميائيًا، بل حدث تغير فيزيائي فقط (إذابة ثم تبخر).</p>
+            </div>
+            
+            <div id="tooltip" class="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const workspace = document.getElementById('workspace');
+            const tools = document.querySelectorAll('.tool');
+            const messageBox = document.getElementById('message-box');
+            const tooltip = document.getElementById('tooltip');
+            
+            let draggedItem = null;
+            let offsetX, offsetY;
+            let items = {
+                container: null,
+                stand: null,
+                burner: null
+            };
+            
+            let experimentState = {
+                hasWater: false,
+                hasSalt: false,
+                isHeating: false,
+                isCooling: false,
+                isConcluded: false,
+                waterLevel: 0
+            };
+            
+            let simulationInterval = null;
+            let heatingTimeout = null;
+            let coolingTimeout = null;
+            
+            // إعداد أدوات السحب والإفلات
+            tools.forEach(tool => {
+                tool.addEventListener('dragstart', function(e) {
+                    draggedItem = this.cloneNode(true);
+                    draggedItem.classList.add('lab-item');
+                    draggedItem.style.position = 'absolute';
+                    
+                    const rect = this.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    
+                    e.dataTransfer.setData('text/plain', '');
+                    this.style.opacity = '0.4';
+                });
+                
+                tool.addEventListener('touchstart', handleTouchStart, { passive: false });
+                
+                // إضافة تلميحات
+                tool.addEventListener('mouseenter', showTooltip);
+                tool.addEventListener('mouseleave', hideTooltip);
+                tool.addEventListener('touchstart', function(e) {
+                    showTooltip(e);
+                    setTimeout(hideTooltip, 2000);
+                }, { passive: false });
+            });
+            
+            function showTooltip(e) {
+                const tool = e.currentTarget;
+                const title = tool.getAttribute('title');
+                if (!title) return;
+                
+                const rect = tool.getBoundingClientRect();
+                tooltip.textContent = title;
+                tooltip.style.left = `${rect.left + rect.width/2}px`;
+                tooltip.style.top = `${rect.top - 30}px`;
+                tooltip.classList.add('show');
+            }
+            
+            function hideTooltip() {
+                tooltip.classList.remove('show');
+            }
+            
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = e.target.closest('.tool');
+                
+                if (!target) return;
+                
+                draggedItem = target.cloneNode(true);
+                draggedItem.classList.add('lab-item');
+                draggedItem.style.position = 'absolute';
+                
+                const rect = target.getBoundingClientRect();
+                offsetX = touch.clientX - rect.left;
+                offsetY = touch.clientY - rect.top;
+                
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+                workspace.appendChild(draggedItem);
+                
+                const type = draggedItem.getAttribute('data-type');
+                const id = `item-${Date.now()}`;
+                draggedItem.setAttribute('data-id', id);
+                
+                if (type === 'container') {
+                    items.container = { id, element: draggedItem };
+                    setupContainer(draggedItem);
+                }
+                else if (type === 'stand') {
+                    items.stand = { id, element: draggedItem };
+                    setupStand(draggedItem);
+                }
+                else if (type === 'burner') {
+                    items.burner = { id, element: draggedItem };
+                    setupBurner(draggedItem);
+                }
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+                target.style.opacity = '0.4';
+            }
+            
+            function handleTouchMove(e) {
+                if (!draggedItem) return;
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+            }
+            
+            function handleTouchEnd() {
+                if (!draggedItem) return;
+                
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+                
+                const tool = document.querySelector('.tool[data-type="' + draggedItem.getAttribute('data-type') + '"]');
+                if (tool) tool.style.opacity = '1';
+                
+                setupDraggable(draggedItem);
+                draggedItem = null;
+            }
+            
+            workspace.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            workspace.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                if (draggedItem) {
+                    const x = e.clientX - offsetX - workspace.getBoundingClientRect().left;
+                    const y = e.clientY - offsetY - workspace.getBoundingClientRect().top;
+                    
+                    draggedItem.style.left = `${x}px`;
+                    draggedItem.style.top = `${y}px`;
+                    workspace.appendChild(draggedItem);
+                    
+                    const type = draggedItem.getAttribute('data-type');
+                    const id = `item-${Date.now()}`;
+                    draggedItem.setAttribute('data-id', id);
+                    
+                    if (type === 'container') {
+                        items.container = { id, element: draggedItem };
+                        setupContainer(draggedItem);
+                    }
+                    else if (type === 'stand') {
+                        items.stand = { id, element: draggedItem };
+                        setupStand(draggedItem);
+                    }
+                    else if (type === 'burner') {
+                        items.burner = { id, element: draggedItem };
+                        setupBurner(draggedItem);
+                    }
+                    
+                    const tool = document.querySelector('.tool[data-type="' + type + '"]');
+                    if (tool) tool.style.opacity = '1';
+                    
+                    setupDraggable(draggedItem);
+                    draggedItem = null;
+                }
+            });
+            
+            function setupContainer(element) {
+                const container = document.createElement('div');
+                container.className = 'container';
+                element.appendChild(container);
+                
+                const water = document.createElement('div');
+                water.className = 'water';
+                container.appendChild(water);
+                
+                const result = document.createElement('div');
+                result.className = 'result-substance';
+                container.appendChild(result);
+            }
+            
+            function setupStand(element) {
+                const stand = document.createElement('div');
+                stand.className = 'stand';
+                element.appendChild(stand);
+                
+                const legs = document.createElement('div');
+                legs.className = 'stand-legs';
+                
+                for (let i = 0; i < 4; i++) {
+                    const leg = document.createElement('div');
+                    leg.className = 'stand-leg';
+                    legs.appendChild(leg);
+                }
+                
+                element.appendChild(legs);
+            }
+            
+            function setupBurner(element) {
+                const burner = document.createElement('div');
+                burner.className = 'burner';
+                element.appendChild(burner);
+                
+                const flame = document.createElement('div');
+                flame.className = 'flame';
+                element.appendChild(flame);
+            }
+            
+            function setupDraggable(element) {
+                let isDragging = false;
+                let startX, startY, startLeft, startTop;
+                
+                element.addEventListener('mousedown', startDrag);
+                element.addEventListener('touchstart', startDragTouch, { passive: false });
+                
+                function startDrag(e) {
+                    if (experimentState.isHeating || experimentState.isCooling) return;
+                    e.stopPropagation();
+                    
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', stopDrag);
+                }
+                
+                function startDragTouch(e) {
+                    if (experimentState.isHeating || experimentState.isCooling) return;
+                    e.preventDefault();
+                    
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('touchmove', dragTouch, { passive: false });
+                    document.addEventListener('touchend', stopDrag);
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function dragTouch(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    const touch = e.touches[0];
+                    const dx = touch.clientX - startX;
+                    const dy = touch.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function stopDrag() {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                    element.style.zIndex = '1';
+                    
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('touchmove', dragTouch);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchend', stopDrag);
+                }
+            }
+            
+            document.getElementById('add-water-btn').addEventListener('click', function() {
+                if (!items.container) {
+                    showMessage('الرجاء وضع الإناء أولاً');
+                    return;
+                }
+                
+                if (experimentState.hasWater) {
+                    showMessage('تمت إضافة الماء بالفعل');
+                    return;
+                }
+                
+                experimentState.hasWater = true;
+                experimentState.waterLevel = 70;
+                
+                const container = items.container.element.querySelector('.container');
+                const water = container.querySelector('.water');
+                water.style.height = `${experimentState.waterLevel}%`;
+                
+                showMessage('تمت إضافة الماء إلى الإناء');
+            });
+            
+            document.getElementById('add-salt-btn').addEventListener('click', function() {
+                if (!items.container) {
+                    showMessage('الرجاء وضع الإناء أولاً');
+                    return;
+                }
+                
+                if (!experimentState.hasWater) {
+                    showMessage('الرجاء إضافة الماء أولاً');
+                    return;
+                }
+                
+                if (experimentState.hasSalt) {
+                    showMessage('تمت إضافة الملح بالفعل');
+                    return;
+                }
+                
+                experimentState.hasSalt = true;
+                
+                const container = items.container.element.querySelector('.container');
+                const water = container.querySelector('.water');
+                
+                // إضافة بعض حبيبات الملح
+                for (let i = 0; i < 10; i++) {
+                    const salt = document.createElement('div');
+                    salt.className = 'salt';
+                    salt.style.left = `${Math.random() * 80 + 10}%`;
+                    salt.style.bottom = `${Math.random() * experimentState.waterLevel + 5}%`;
+                    salt.style.opacity = '1';
+                    water.appendChild(salt);
+                    
+                    // حركة الملح عند الذوبان
+                    setTimeout(() => {
+                        salt.style.opacity = '0';
+                        salt.style.transition = 'opacity 2s';
+                    }, 500);
+                }
+                
+                showMessage('تمت إضافة الملح إلى الماء');
+            });
+            
+            document.getElementById('simulate-btn').addEventListener('click', function() {
+                if (experimentState.isHeating || experimentState.isCooling) return;
+                
+                // التحقق من صحة الإعداد
+                if (!items.container) {
+                    showMessage('الرجاء وضع الإناء أولاً');
+                    return;
+                }
+                
+                if (!items.stand) {
+                    showMessage('الرجاء وضع الساق الزجاجية أولاً');
+                    return;
+                }
+                
+                if (!items.burner) {
+                    showMessage('الرجاء وضع الموقد أولاً');
+                    return;
+                }
+                
+                if (!experimentState.hasWater) {
+                    showMessage('الرجاء إضافة الماء إلى الإناء');
+                    return;
+                }
+                
+                if (!experimentState.hasSalt) {
+                    showMessage('الرجاء إضافة الملح إلى الماء');
+                    return;
+                }
+                
+                // بدء المحاكاة
+                experimentState.isHeating = true;
+                showMessage('جارٍ تسخين المحلول الملحي...');
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = true;
+                document.getElementById('stop-btn').disabled = false;
+                document.getElementById('cool-btn').disabled = true;
+                document.getElementById('conclude-btn').disabled = true;
+                
+                // إشعال الموقد
+                const flame = items.burner.element.querySelector('.flame');
+                flame.classList.add('on');
+                
+                // بدء عملية التسخين
+                const container = items.container.element.querySelector('.container');
+                const water = container.querySelector('.water');
+                
+                // إنشاء فقاعات عند التسخين
+                simulationInterval = setInterval(() => {
+                    createBubble(container);
+                }, 300);
+                
+                // تبخير الماء تدريجياً
+                let evaporationInterval = setInterval(() => {
+                    experimentState.waterLevel -= 1;
+                    water.style.height = `${experimentState.waterLevel}%`;
+                    
+                    // إنشاء بخار عند الغليان
+                    if (Math.random() > 0.7) {
+                        createSteam(container);
+                    }
+                    
+                    if (experimentState.waterLevel <= 0) {
+                        clearInterval(evaporationInterval);
+                        finishHeating();
+                    }
+                }, 200);
+                
+                // إنهاء التسخين بعد 20 ثانية
+                heatingTimeout = setTimeout(() => {
+                    clearInterval(evaporationInterval);
+                    finishHeating();
+                }, 20000);
+            });
+            
+            function createBubble(container) {
+                if (!experimentState.isHeating) return;
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.left = `${Math.random() * 80 + 10}%`;
+                bubble.style.bottom = `${Math.random() * experimentState.waterLevel + 5}%`;
+                container.appendChild(bubble);
+                
+                setTimeout(() => {
+                    bubble.remove();
+                }, 2000);
+            }
+            
+            function createSteam(container) {
+                const steam = document.createElement('div');
+                steam.className = 'steam';
+                steam.style.left = `${Math.random() * 80 + 10}%`;
+                steam.style.bottom = `${experimentState.waterLevel + 5}%`;
+                container.appendChild(steam);
+                
+                setTimeout(() => {
+                    steam.remove();
+                }, 3000);
+            }
+            
+            function finishHeating() {
+                experimentState.isHeating = false;
+                
+                // إطفاء الموقد
+                const flame = items.burner.element.querySelector('.flame');
+                flame.classList.remove('on');
+                
+                // إظهار رسالة التسخين
+                document.getElementById('heating-message').style.display = 'block';
+                
+                // تفعيل زر التبريد
+                document.getElementById('cool-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                
+                showMessage('تم تسخين المحلول بالكامل، يمكنك الآن تبريد الإناء');
+            }
+            
+            document.getElementById('cool-btn').addEventListener('click', function() {
+                if (experimentState.isHeating || experimentState.isCooling) return;
+                
+                // بدء التبريد
+                experimentState.isCooling = true;
+                showMessage('جارٍ تبريد الإناء...');
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('cool-btn').disabled = true;
+                document.getElementById('stop-btn').disabled = false;
+                document.getElementById('conclude-btn').disabled = true;
+                
+                // إظهار المادة المتبقية
+                const container = items.container.element.querySelector('.container');
+                const result = container.querySelector('.result-substance');
+                result.style.height = '20%';
+                
+                // إنهاء التبريد بعد 6 ثوانٍ
+                coolingTimeout = setTimeout(() => {
+                    finishCooling();
+                }, 6000);
+            });
+            
+            function finishCooling() {
+                experimentState.isCooling = false;
+                
+                // إظهار رسالة التبريد
+                document.getElementById('cooling-message').style.display = 'block';
+                
+                // تفعيل زر الاستنتاج
+                document.getElementById('conclude-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                
+                showMessage('تم تبريد الإناء بنجاح، يمكنك الآن استنتاج نتائج التجربة');
+            }
+            
+            document.getElementById('conclude-btn').addEventListener('click', function() {
+                experimentState.isConcluded = true;
+                
+                // إظهار جدول الاستنتاج
+                document.querySelector('.conclusion-table').style.display = 'block';
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('conclude-btn').disabled = true;
+                
+                showMessage('تم استنتاج نتائج التجربة بنجاح');
+            });
+            
+            function stopSimulation() {
+                clearInterval(simulationInterval);
+                clearTimeout(heatingTimeout);
+                clearTimeout(coolingTimeout);
+                
+                // إطفاء الموقد
+                if (items.burner) {
+                    const flame = items.burner.element.querySelector('.flame');
+                    flame.classList.remove('on');
+                }
+                
+                // إخفاء الرسائل
+                document.getElementById('heating-message').style.display = 'none';
+                document.getElementById('cooling-message').style.display = 'none';
+                
+                // إخفاء جدول الاستنتاج
+                document.querySelector('.conclusion-table').style.display = 'none';
+                
+                // إعادة تعيين حالة التجربة
+                experimentState = {
+                    hasWater: false,
+                    hasSalt: false,
+                    isHeating: false,
+                    isCooling: false,
+                    isConcluded: false,
+                    waterLevel: 0
+                };
+                
+                // إعادة تعيين العناصر المرئية
+                if (items.container) {
+                    const container = items.container.element.querySelector('.container');
+                    const water = container.querySelector('.water');
+                    const result = container.querySelector('.result-substance');
+                    
+                    water.style.height = '0';
+                    result.style.height = '0';
+                    water.innerHTML = '';
+                }
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                document.getElementById('cool-btn').disabled = true;
+                document.getElementById('conclude-btn').disabled = true;
+                
+                showMessage('تم إيقاف المحاكاة');
+            }
+            
+            document.getElementById('stop-btn').addEventListener('click', stopSimulation);
+            
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                stopSimulation();
+                
+                // إزالة جميع العناصر
+                document.querySelectorAll('.lab-item').forEach(item => item.remove());
+                
+                // إعادة تعيين المتغيرات
+                items = {
+                    container: null,
+                    stand: null,
+                    burner: null
+                };
+                
+                showMessage('تم إعادة ضبط التجربة');
+            });
+            
+            function showMessage(message) {
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

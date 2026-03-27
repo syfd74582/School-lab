@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مزرعة الفواكه - تعلم القسمة</title>
+    <style>
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #a8e6cf, #dcedc1);
+            margin: 0;
+            padding: 20px;
+            color: #5a3d2b;
+            text-align: center;
+        }
+        
+        #game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        h1 {
+            color: #d32f2f;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        
+        .math-equation {
+            background-color: #ffebee;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 2em;
+            margin: 20px auto;
+            width: fit-content;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .fruit-preview {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 500px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .fruit-preview-item {
+            font-size: 25px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .garden-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+        
+        .main-basket {
+            width: 250px;
+            height: 120px;
+            background: linear-gradient(to bottom, #8d6e63, #5d4037);
+            border-radius: 0 0 20px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .main-basket::before {
+            content: "";
+            position: absolute;
+            top: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to right, #a1887f, #bcaaa4, #a1887f);
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .fruit {
+            font-size: 30px;
+            margin: 5px;
+            cursor: grab;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .fruit.dragging {
+            transform: scale(1.2);
+            opacity: 0.8;
+            z-index: 10;
+        }
+        
+        .friends-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        
+        .friend {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+        }
+        
+        .friend-avatar {
+            font-size: 50px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .friend-basket {
+            width: 80px;
+            height: 60px;
+            background: linear-gradient(to bottom, #a1887f, #8d6e63);
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 5px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .friend-basket::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: #bcaaa4;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .friend-name {
+            margin-top: 5px;
+            font-weight: bold;
+            color: #5a3d2b;
+        }
+        
+        .friend-counter {
+            position: absolute;
+            top: -25px;
+            background-color: #ffeb3b;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            min-width: 160px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .feedback {
+            font-size: 1.5em;
+            min-height: 60px;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+        
+        .correct {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            animation: pulse 0.5s;
+        }
+        
+        .incorrect {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .celebration {
+            position: absolute;
+            font-size: 30px;
+            opacity: 0;
+            z-index: 10;
+            pointer-events: none;
+            animation: float 3s ease-in-out forwards;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        
+        .level-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        .tutorial {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-align: right;
+        }
+        
+        .tutorial h3 {
+            color: #d32f2f;
+            margin-top: 0;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #f44336, #ff9800);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .sound-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="level-info">المستوى: <span id="level">١</span></div>
+        <div class="sound-toggle" id="sound-toggle">🔊</div>
+        
+        <h1>مزرعة الفواكه 🍎🍊🍋</h1>
+        <p>تعلّم القسمة بطريقة ممتعة!</p>
+        
+        <div class="math-equation" id="math-equation">
+            <span id="total-fruits">١٢</span> ÷ <span id="friends-count">٣</span> = <span id="result">؟</span>
+        </div>
+        
+        <div class="fruit-preview" id="fruit-preview">
+            <!-- معاينة الفواكه -->
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="garden-area">
+            <div class="main-basket" id="main-basket">
+                <!-- الفواكه الرئيسية -->
+            </div>
+            
+            <div class="friends-container" id="friends-container">
+                <!-- الأصدقاء وسلالهم -->
+            </div>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="controls">
+            <button id="check-btn">تحقق من الإجابة</button>
+            <button id="distribute-btn">وزّع الفواكه</button>
+            <button id="new-problem">مسألة جديدة</button>
+            <button id="help-btn">مساعدة</button>
+        </div>
+        
+        <div class="tutorial" id="tutorial">
+            <h3>كيفية اللعب:</h3>
+            <p>١. انظر إلى عدد الفواكه وعدد الأصدقاء</p>
+            <p>٢. اسحب الفواكه إلى سلال الأصدقاء</p>
+            <p>٣. أو اضغط على "وزّع الفواكه" للتوزيع التلقائي</p>
+            <p>٤. اضغط على "تحقق" عندما تنتهي</p>
+            <p>٥. التوزيع الصحيح يعني أن كل صديق يحصل على نفس العدد</p>
+            <button id="close-tutorial">حسناً، فهمت!</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // العناصر الرئيسية
+            const mainBasket = document.getElementById('main-basket');
+            const friendsContainer = document.getElementById('friends-container');
+            const fruitPreview = document.getElementById('fruit-preview');
+            const mathEquation = document.getElementById('math-equation');
+            const totalFruitsElement = document.getElementById('total-fruits');
+            const friendsCountElement = document.getElementById('friends-count');
+            const resultElement = document.getElementById('result');
+            const feedbackElement = document.getElementById('feedback');
+            const checkBtn = document.getElementById('check-btn');
+            const distributeBtn = document.getElementById('distribute-btn');
+            const newProblemBtn = document.getElementById('new-problem');
+            const helpBtn = document.getElementById('help-btn');
+            const levelElement = document.getElementById('level');
+            const progressBar = document.getElementById('progress-bar');
+            const tutorial = document.getElementById('tutorial');
+            const closeTutorialBtn = document.getElementById('close-tutorial');
+            const soundToggle = document.getElementById('sound-toggle');
+            
+            // متغيرات اللعبة
+            let totalFruits = 12;
+            let friendsCount = 3;
+            let correctAnswer = 4;
+            let level = 1;
+            let correctAnswers = 0;
+            let currentFruit = '🍎';
+            let distributedFruits = 0;
+            let soundEnabled = true;
+            let fruits = [];
+            let friends = [];
+            
+            // الأصوات
+            const sounds = {
+                correct: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
+                wrong: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
+                distribute: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3'),
+                drop: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3'),
+                levelUp: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3')
+            };
+            
+            // تهيئة اللعبة
+            function initGame() {
+                generateProblem();
+                createFruitPreview();
+                createMainBasket();
+                createFriends();
+                setupDragAndDrop();
+                updateProgress();
+            }
+            
+            // توليد مسألة جديدة
+            function generateProblem() {
+                friendsCount = Math.min(5, Math.max(2, Math.floor(Math.random() * 3) + 2));
+                correctAnswer = Math.floor(Math.random() * 3) + 2;
+                totalFruits = friendsCount * correctAnswer;
+                
+                const fruitTypes = ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒'];
+                currentFruit = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+                
+                // تحديث المعادلة الرياضية بالأرقام العربية
+                totalFruitsElement.textContent = toArabicNumerals(totalFruits);
+                friendsCountElement.textContent = toArabicNumerals(friendsCount);
+                resultElement.textContent = '؟';
+                
+                feedbackElement.textContent = '';
+                feedbackElement.className = 'feedback';
+                
+                distributedFruits = 0;
+            }
+            
+            // تحويل الأرقام إلى العربية
+            function toArabicNumerals(num) {
+                const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                return num.toString().split('').map(digit => arabicNumerals[parseInt(digit)]).join('');
+            }
+            
+            // إنشاء معاينة الفواكه
+            function createFruitPreview() {
+                fruitPreview.innerHTML = '';
+                
+                for (let i = 0; i < totalFruits; i++) {
+                    const fruit = document.createElement('div');
+                    fruit.className = 'fruit-preview-item';
+                    fruit.textContent = currentFruit;
+                    fruitPreview.appendChild(fruit);
+                }
+            }
+            
+            // إنشاء سلة الفواكه الرئيسية
+            // استبدل دالة createMainBasket بالكود التالي:
+// استبدل دالة createMainBasket بالكود التالي:
+function createMainBasket() {
+    mainBasket.innerHTML = '';
+    fruits = [];
+    
+    for (let i = 0; i < totalFruits; i++) {
+        const fruit = document.createElement('div');
+        fruit.className = 'fruit';
+        fruit.textContent = currentFruit;
+        fruit.dataset.index = i;
+        fruit.setAttribute('draggable', 'true');
+        
+        // إزالة تأثيرات الاختفاء وجعلها ظاهرة مباشرة
+        fruit.style.opacity = '1';
+        fruit.style.transform = 'translateY(0)';
+        
+        // إضافة تأثيرات مرئية
+        fruit.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        fruit.style.transition = 'all 0.3s';
+        
+        mainBasket.appendChild(fruit);
+        fruits.push(fruit);
+    }
+}            function createFriends() {
+                friendsContainer.innerHTML = '';
+                friends = [];
+                
+                const friendNames = ['أحمد', 'مريم', 'خالد', 'سارة', 'علي'];
+                const friendAvatars = ['👦', '👧', '🧑', '👩', '🧔'];
+                
+                for (let i = 0; i < friendsCount; i++) {
+                    const friend = document.createElement('div');
+                    friend.className = 'friend';
+                    
+                    const avatar = document.createElement('div');
+                    avatar.className = 'friend-avatar';
+                    avatar.textContent = friendAvatars[i];
+                    
+                    const basket = document.createElement('div');
+                    basket.className = 'friend-basket';
+                    basket.dataset.index = i;
+                    
+                    const counter = document.createElement('div');
+                    counter.className = 'friend-counter';
+                    counter.textContent = '٠';
+                    counter.id = `counter-${i}`;
+                    
+                    const name = document.createElement('div');
+                    name.className = 'friend-name';
+                    name.textContent = friendNames[i];
+                    
+                    friend.appendChild(avatar);
+                    friend.appendChild(basket);
+                    friend.appendChild(counter);
+                    friend.appendChild(name);
+                    friendsContainer.appendChild(friend);
+                    
+                    friends.push(basket);
+                }
+            }
+            
+            // إعداد سحب وإفلات الفواكه
+            function setupDragAndDrop() {
+                fruits.forEach(fruit => {
+                    fruit.addEventListener('dragstart', dragStart);
+                    fruit.addEventListener('dragend', dragEnd);
+                });
+                
+                friends.forEach(basket => {
+                    basket.addEventListener('dragover', dragOver);
+                    basket.addEventListener('dragenter', dragEnter);
+                    basket.addEventListener('dragleave', dragLeave);
+                    basket.addEventListener('drop', drop);
+                });
+            }
+            
+            // أحداث السحب والإفلات
+            function dragStart(e) {
+                this.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', this.dataset.index);
+                if (soundEnabled) sounds.drop.play();
+            }
+            
+            function dragEnd() {
+                this.classList.remove('dragging');
+            }
+            
+            function dragOver(e) {
+                e.preventDefault();
+            }
+            
+            function dragEnter(e) {
+                e.preventDefault();
+                this.parentElement.style.transform = 'scale(1.05)';
+            }
+            
+            function dragLeave() {
+                this.parentElement.style.transform = 'scale(1)';
+            }
+            
+            function drop(e) {
+                e.preventDefault();
+                this.parentElement.style.transform = 'scale(1)';
+                
+                const fruitIndex = e.dataTransfer.getData('text/plain');
+                const fruit = fruits[fruitIndex];
+                
+                if (fruit && !fruit.classList.contains('distributed')) {
+                    fruit.classList.add('distributed');
+                    animateFruitToBasket(fruit, this);
+                }
+            }
+            
+            // رسوم متحركة لتحريك الفاكهة إلى السلة
+            function animateFruitToBasket(fruit, basket) {
+                const fruitClone = fruit.cloneNode(true);
+                fruitClone.style.position = 'absolute';
+                fruitClone.style.left = `${fruit.getBoundingClientRect().left}px`;
+                fruitClone.style.top = `${fruit.getBoundingClientRect().top}px`;
+                document.body.appendChild(fruitClone);
+                
+                const basketRect = basket.getBoundingClientRect();
+                const targetX = basketRect.left + basketRect.width / 2 - 15;
+                const targetY = basketRect.top + basketRect.height / 2 - 15;
+                
+                fruit.style.visibility = 'hidden';
+                
+                // مسار منحني للفاكهة
+                const path = [
+                    { x: fruit.getBoundingClientRect().left, y: fruit.getBoundingClientRect().top },
+                    { 
+                        x: (fruit.getBoundingClientRect().left + targetX) / 2 + (Math.random() * 40 - 20),
+                        y: (fruit.getBoundingClientRect().top + targetY) / 2 - 50 + (Math.random() * 30 - 15)
+                    },
+                    { x: targetX, y: targetY }
+                ];
+                
+                let start = null;
+                const duration = 800;
+                
+                function step(timestamp) {
+                    if (!start) start = timestamp;
+                    const progress = Math.min((timestamp - start) / duration, 1);
+                    
+                    // حساب الموضع على المنحنى
+                    const x = Math.pow(1-progress, 2)*path[0].x + 2*(1-progress)*progress*path[1].x + Math.pow(progress, 2)*path[2].x;
+                    const y = Math.pow(1-progress, 2)*path[0].y + 2*(1-progress)*progress*path[1].y + Math.pow(progress, 2)*path[2].y;
+                    
+                    fruitClone.style.left = `${x}px`;
+                    fruitClone.style.top = `${y}px`;
+                    fruitClone.style.transform = `rotate(${progress * 360}deg) scale(${1 - progress * 0.2})`;
+                    
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        const basketIndex = parseInt(basket.dataset.index);
+                        addFruitToBasket(basket, basketIndex);
+                        fruitClone.remove();
+                        
+                        distributedFruits++;
+                        checkDistribution();
+                    }
+                }
+                
+                window.requestAnimationFrame(step);
+            }
+            
+            // إضافة فاكهة إلى سلة الصديق
+            function addFruitToBasket(basket, basketIndex) {
+                const fruit = document.createElement('div');
+                fruit.className = 'fruit';
+                fruit.textContent = currentFruit;
+                fruit.style.width = '25px';
+                fruit.style.height = '25px';
+                fruit.style.margin = '2px';
+                fruit.style.animation = 'popIn 0.3s ease-out';
+                
+                basket.appendChild(fruit);
+                
+                // تحديث العداد
+                const counter = document.getElementById(`counter-${basketIndex}`);
+                counter.textContent = toArabicNumerals(parseInt(toEnglishNumerals(counter.textContent)) + 1);
+                
+                if (soundEnabled) sounds.drop.play();
+            }
+            
+            // تحويل الأرقام العربية إلى إنجليزية للعمليات الحسابية
+            function toEnglishNumerals(arabicNum) {
+                const arabicToEnglish = {
+                    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+                    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+                };
+                return arabicNum.split('').map(digit => arabicToEnglish[digit]).join('');
+            }
+            
+            // توزيع الفواكه تلقائياً
+            function distributeFruits() {
+                // مسح التوزيع السابق
+                fruits.forEach(fruit => {
+                    fruit.classList.remove('distributed');
+                    fruit.style.visibility = 'visible';
+                });
+                
+                friends.forEach((basket, index) => {
+                    basket.innerHTML = '';
+                    const counter = document.getElementById(`counter-${index}`);
+                    counter.textContent = '٠';
+                });
+                
+                distributedFruits = 0;
+                
+                // توزيع الفواكه مع تأثيرات متتالية
+                const fruitsPerFriend = Math.floor(totalFruits / friendsCount);
+                
+                for (let i = 0; i < friendsCount; i++) {
+                    for (let j = 0; j < fruitsPerFriend; j++) {
+                        const fruitIndex = i * fruitsPerFriend + j;
+                        if (fruitIndex < fruits.length) {
+                            setTimeout(() => {
+                                fruits[fruitIndex].classList.add('distributed');
+                                animateFruitToBasket(fruits[fruitIndex], friends[i]);
+                                if (soundEnabled) sounds.distribute.play();
+                            }, (i * fruitsPerFriend + j) * 300);
+                        }
+                    }
+                }
+            }
+            
+            // التحقق من التوزيع
+            function checkDistribution() {
+                if (distributedFruits < totalFruits) {
+                    feedbackElement.textContent = 'لم تقم بتوزيع جميع الفواكه بعد!';
+                    feedbackElement.className = 'feedback incorrect';
+                    if (soundEnabled) sounds.wrong.play();
+                    return;
+                }
+                
+                let allCorrect = true;
+                
+                friends.forEach(basket => {
+                    const counter = basket.parentElement.querySelector('.friend-counter');
+                    const count = parseInt(toEnglishNumerals(counter.textContent));
+                    
+                    if (count !== correctAnswer) {
+                        allCorrect = false;
+                    }
+                });
+                
+                if (allCorrect) {
+                    resultElement.textContent = toArabicNumerals(correctAnswer);
+                    feedbackElement.innerHTML = `أحسنت! كل صديق حصل على <span style="font-size:1.2em">${toArabicNumerals(correctAnswer)}</span> ${currentFruit}`;
+                    feedbackElement.className = 'feedback correct';
+                    createCelebration();
+                    
+                    // زيادة عدد الإجابات الصحيحة
+                    correctAnswers++;
+                    updateProgress();
+                    
+                    if (soundEnabled) sounds.correct.play();
+                } else {
+                    feedbackElement.textContent = 'ليس صحيحاً! حاول مرة أخرى. يجب أن يحصل كل صديق على نفس العدد من الفواكه.';
+                    feedbackElement.className = 'feedback incorrect';
+                    if (soundEnabled) sounds.wrong.play();
+                }
+            }
+            
+            // تأثيرات الاحتفال
+            function createCelebration() {
+                const emojis = ['🎉', '🎊', '✨', '🌟', '💫', '🥳', '👏'];
+                const container = document.getElementById('game-container');
+                
+                for (let i = 0; i < 15; i++) {
+                    setTimeout(() => {
+                        const celeb = document.createElement('div');
+                        celeb.className = 'celebration';
+                        celeb.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                        celeb.style.left = `${Math.random() * 100}%`;
+                        celeb.style.top = `${Math.random() * 100 + 50}%`;
+                        container.appendChild(celeb);
+                        
+                        setTimeout(() => {
+                            celeb.remove();
+                        }, 3000);
+                    }, i * 150);
+                }
+            }
+            
+            // تحديث شريط التقدم
+            function updateProgress() {
+                const progress = (correctAnswers / 3) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                if (correctAnswers >= 3) {
+                    correctAnswers = 0;
+                    level++;
+                    levelElement.textContent = toArabicNumerals(level);
+                    
+                    if (soundEnabled) sounds.levelUp.play();
+                    
+                    // عرض رسالة تهنئة
+                    setTimeout(() => {
+                        feedbackElement.innerHTML = `مرحى! وصلت إلى المستوى <span style="font-size:1.2em">${toArabicNumerals(level)}</span> 🎉`;
+                        createCelebration();
+                        generateProblem();
+                        createFruitPreview();
+                        createMainBasket();
+                        createFriends();
+                        setupDragAndDrop();
+                        updateProgress();
+                    }, 1500);
+                }
+            }
+            
+            // تبديل الصوت
+            soundToggle.addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                this.textContent = soundEnabled ? '🔊' : '🔇';
+            });
+            
+            // أحداث الأزرار
+            checkBtn.addEventListener('click', checkDistribution);
+            distributeBtn.addEventListener('click', distributeFruits);
+            newProblemBtn.addEventListener('click', function() {
+                generateProblem();
+                createFruitPreview();
+                createMainBasket();
+                createFriends();
+                setupDragAndDrop();
+            });
+            helpBtn.addEventListener('click', function() {
+                tutorial.style.display = 'block';
+            });
+            closeTutorialBtn.addEventListener('click', function() {
+                tutorial.style.display = 'none';
+            });
+            
+            // بدء اللعبة
+            initGame();
+        });
+    </script>
+</body>
+</html>

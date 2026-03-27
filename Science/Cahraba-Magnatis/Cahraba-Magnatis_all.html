@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>المختبر الافتراضي للتمغنط بالكهرباء</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --wire-color: #000000;
+            --iron-color: #95a5a6;
+            --iron-filings-color: #7f8c8d;
+            --switch-on: #27ae60;
+            --switch-off: #e74c3c;
+            --battery-color: #e53935;
+            --background-color: #f0f8ff;
+            --workspace-color: #ecf0f1;
+            --sidebar-color: #2c3e50;
+            --text-light: #ecf0f1;
+            --text-dark: #2c3e50;
+            --electron-color: #FFEB3B;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #sidebar {
+            width: 220px;
+            background-color: var(--sidebar-color);
+            color: var(--text-light);
+            padding: 10px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        #sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-light);
+        }
+        
+        .tool {
+            width: 100px;
+            height: 100px;
+            margin: 10px auto;
+            cursor: grab;
+            background-color: transparent;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            box-sizing: border-box;
+            user-select: none;
+            position: relative;
+            transition: transform 0.2s;
+            touch-action: none;
+        }
+        
+        .tool:active {
+            transform: scale(0.95);
+        }
+        
+        .tool img {
+            max-width: 100%;
+            max-height: 100%;
+            background-color: transparent;
+            pointer-events: none;
+        }
+        
+        .tool-name {
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            color: var(--text-light);
+            pointer-events: none;
+        }
+        
+        #workspace {
+            flex-grow: 1;
+            background-color: var(--workspace-color);
+            position: relative;
+            overflow: hidden;
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px),
+                              linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            touch-action: none;
+        }
+        
+        .explanation-box {
+            position: absolute;
+            top: 50px;
+            left: 20px;
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 14px;
+            max-width: 250px;
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        .lab-item {
+            position: absolute;
+            user-select: none;
+            cursor: move;
+            background-color: transparent;
+            transition: transform 0.2s;
+            touch-action: none;
+        }
+        
+        .lab-item:active {
+            transform: scale(1.05);
+            z-index: 100;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background-color: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+            touch-action: manipulation;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            min-width: 100px;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #reset-btn {
+            background-color: var(--accent-color);
+        }
+        
+        #stop-btn {
+            background-color: #f39c12;
+        }
+        
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        #stop-btn:hover {
+            background-color: #d35400;
+        }
+        
+        #message-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 80%;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .electron {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--electron-color);
+            border-radius: 50%;
+            z-index: 10;
+            box-shadow: 0 0 5px var(--electron-color);
+        }
+        
+        .wire-container {
+            position: absolute;
+            cursor: pointer;
+            z-index: 5;
+            overflow: visible;
+        }
+        
+        .wire-body {
+            stroke: var(--wire-color);
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        .wire-end {
+            fill: var(--wire-color);
+            stroke: var(--wire-color);
+            stroke-width: 1;
+            cursor: move;
+            transition: all 0.3s;
+        }
+        
+        .wire-end.connected {
+            fill: var(--primary-color);
+            stroke: var(--primary-color);
+            filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.7));
+        }
+        
+        .wire-control {
+            fill: #777;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+        
+        .wire-control:hover {
+            opacity: 1;
+            fill: var(--primary-color);
+        }
+        
+        .electron-flow {
+            stroke: var(--electron-color);
+            stroke-width: 4;
+            stroke-dasharray: 5, 3;
+            animation: electronFlow 1s linear infinite;
+            fill: none;
+        }
+        
+        @keyframes electronFlow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 20; }
+        }
+        
+.battery-tool {
+    display: flex;              /* استخدام flexbox لتوزيع العناصر */
+    align-items: center;       /* محاذاة المحتوى عموديًا في المنتصف */
+    border: 1px solid #ccc;    /* إضافة إطار (اختياري) */
+    padding: 10px;             /* إضافة مسافة داخلية */
+    border-radius: 5px;        /* زوايا دائرية (اختياري) */
+    cursor: grab;              /* تغيير المؤشر عند السحب */
+}
+
+.battery-tool img {
+    width: 100px;  
+    height: 200px;
+    /* عرض الصورة (يمكنك تعديله حسب الحاجة) */
+    height: auto;              /* الحفاظ على نسبة العرض إلى الارتفاع */
+    margin-right: 10px;        /* إضافة مسافة بين الصورة واسم الأداة */
+    transform: rotate(90deg);  /* تدوير الصورة بزاوية 90 درجة */
+    transition: transform 0.5s; /* إضافة تأثير انتقال (اختياري) */
+}
+
+
+
+        
+       
+        .connection-point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--wire-color);
+            z-index: 20;
+            cursor: pointer;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+            touch-action: manipulation;
+        }
+        
+        
+        
+@keyframes pulseField {
+    0% {
+        opacity: 0.7;
+        transform: scale(0.95);
+        box-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1.05);
+        box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+    }
+}
+
+.magnetic-field {
+    animation: pulseField 2s infinite alternate;
+}
+
+.filing {
+    transition: all 0.5s ease-out;
+}
+
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: none;
+            transform: translateY(5px);
+            opacity: 0;
+            transition: all 0.2s;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .equation-box {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 16px;
+            text-align: center;
+            max-width: 250px;
+            border-right: 5px solid var(--secondary-color);
+        }
+        
+        .instructions-box {
+            position: absolute;
+            top: 200px;
+            right: 20px;
+            background-color: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 14px;
+            max-width: 250px;
+            border-right: 5px solid var(--primary-color);
+        }
+        
+        .instructions-box h3 {
+            margin-top: 0;
+            color: var(--text-dark);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .instructions-box ol {
+            padding-right: 20px;
+            text-align: right;
+        }
+        
+        .instructions-box li {
+            margin-bottom: 8px;
+        }
+        
+        .equation {
+            font-weight: bold;
+            margin: 10px 0;
+            direction: ltr;
+            text-align: center;
+            color: var(--text-dark);
+        }
+        
+        /* تصميم المغناطيس الكهربائي */
+        .electromagnet {
+            position: relative;
+            width: 60px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .iron-nail {
+            width: 10px;
+            height: 100px;
+            background-color: var(--iron-color);
+            border-radius: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .coil {
+            position: absolute;
+            width: 50px;
+            height: 100px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #8e44ad,
+                #8e44ad 5px,
+                transparent 5px,
+                transparent 10px
+            );
+            z-index: 2;
+            border-radius: 25px;
+        }
+        
+      .iron-filings {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    pointer-events: none;
+    display: none;
+    top: -50px;
+    left: -50px;
+}
+
+.filing {
+    position: absolute;
+    background-color: #7f8c8d;
+    transform-origin: left center;
+    transition: all 0.5s ease-out;
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+/* تأثير المجال المغناطيسي عند التنشيط */
+.filing.active {
+    box-shadow: 0 0 8px rgba(0, 200, 255, 0.8);
+    transition: all 0.3s ease-out;
+}
+        /* تصميم المفتاح الكهربائي */
+        .switch {
+            position: relative;
+            width: 60px;
+            height: 100px;
+            background-color: #bdc3c7;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .switch-base {
+            width: 40px;
+            height: 60px;
+            background-color: #7f8c8d;
+            border-radius: 3px;
+            position: relative;
+        }
+        
+        .switch-lever {
+            position: absolute;
+            width: 30px;
+            height: 5px;
+            background-color: #34495e;
+            top: 20px;
+            left: 5px;
+            transform-origin: left center;
+            transition: transform 0.3s;
+        }
+        
+        .switch-lever.on {
+            transform: rotate(30deg);
+            background-color: var(--switch-on);
+        }
+        
+        .switch-lever.off {
+            transform: rotate(-30deg);
+            background-color: var(--switch-off);
+        }
+        
+        .switch-connection {
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            background-color: #333;
+            bottom: 0;
+        }
+        
+        .switch-connection.left {
+            left: 5px;
+        }
+        
+        .switch-connection.right {
+            right: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 80px;
+            }
+            
+            .tool {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .tool-name {
+                font-size: 10px;
+            }
+            
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+            
+            .equation-box, .instructions-box {
+                font-size: 14px;
+                max-width: 200px;
+                
+            }
+        }
+        
+        
+        
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div id="sidebar">
+            <h3>أدوات المختبر</h3>
+           <div class="tool battery-tool" draggable="true" data-type="battery" title="اسحبني إلى مساحة العمل">
+    <img src="./battery-vector-7.jpg" alt="بطارية">
+    <div class="tool-name">مصدر التيار</div>
+</div>
+
+            <div class="tool" draggable="true" data-type="wire" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNMjAgNTBjMC0xMCAxMC0yMCAyMC0yMHMxMCAxMCAxMCAyMGMwIDEwLTEwIDIwLTIwIDIwUzIwIDYwIDIwIDUweiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMzAgNTBoNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTcwIDUwYzAgMTAtMTAgMjAtMjAgMjBzLTEwLTEwLTEwLTIwYzAtMTAgMTAtMjAgMjAtMjBzMTAgMTAgMTAgMjB6IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iNCIvPjxjaXJjbGUgY3g9IjIwIiBjeT0iNTAiIHI9IjgiIGZpbGw9IiMwMDAiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjUwIiByPSI4IiBmaWxsPSIjMDAwIi8+PC9zdmc+" alt="سلك توصيل">
+                <div class="tool-name">سلك توصيل</div>
+            </div>
+            <div class="tool" draggable="true" data-type="electromagnet" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSI0NSIgeT0iMTAiIHdpZHRoPSIxMCIgaGVpZ2h0PSI4MCIgZmlsbD0iIzk1YTVhNiIgcng9IjUiLz48cGF0aCBkPSJNMjUgMTVDNzUgMTUsNzUgODUsMjUgODUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhlNDRhZCIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtZGFzaGFycmF5PSIxMCw1Ii8+PC9zdmc+" alt="مغناطيس كهربائي">
+                <div class="tool-name">ملف حديدي</div>
+            </div>
+            <div class="tool" draggable="true" data-type="filings" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2Y4YzhkIiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSIyNSIgeT0iMjUiIHdpZHRoPSI1IiBoZWlnaHQ9IjIiIHRyYW5zZm9ybT0icm90YXRlKDMwKSIgZmlsbD0iIzdmOGM4ZCIvPjxyZWN0IHg9IjQwIiB5PSIzMCIgd2lkdGg9IjUiIGhlaWdodD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoLTQ1KSIgZmlsbD0iIzdmOGM4ZCIvPjxyZWN0IHg9IjYwIiB5PSI1MCIgd2lkdGg9IjUiIGhlaWdodD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoMTUpIiBmaWxsPSIjN2Y4YzhkIi8+PHJlY3QgeD0iMjAiIHk9IjYwIiB3aWR0aD0iNSIgaGVpZ2h0PSIyIiB0cmFuc2Zvcm09InJvdGF0ZSgtMjApIiBmaWxsPSIjN2Y4YzhkIi8+PHJlY3QgeD0iNTUiIHk9IjIwIiB3aWR0aD0iNSIgaGVpZ2h0PSIyIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiIGZpbGw9IiM3ZjhjOGQiLz48cmVjdCB4PSIzNSIgeT0iNzAiIHdpZHRoPSI1IiBoZWlnaHQ9IjIiIHRyYW5zZm9ybT0icm90YXRlKC0xNSkiIGZpbGw9IiM3ZjhjOGQiLz48L3N2Zz4=" alt="برادة حديد">
+                <div class="tool-name">برادة حديد</div>
+            </div>
+            <div class="tool" draggable="true" data-type="switch" title="اسحبني إلى مساحة العمل">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSIyMCIgeT0iMTAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI4MCIgZmlsbD0iI2JkYzNjNyIgcng9IjUiLz48cmVjdCB4PSIzMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzdmOGM4ZCIgcng9IjMiLz48cGF0aCBkPSJNMzUgMzUgTDU1IDM1IiBzdHJva2U9IiMzNDQ5NWUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCwzNSwzNSkiLz48cmVjdCB4PSIzMCIgeT0iODAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzMzMyIvPjxyZWN0IHg9IjYwIiB5PSI4MCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMzMzIi8+PC9zdmc+" alt="مفتاح كهربائي">
+                <div class="tool-name">مفتاح كهربائي</div>
+            </div>
+        </div>
+        
+        <div id="workspace">
+            <div id="message-box"></div>
+            
+            <div class="explanation-box">
+                <h3>شرح التجربة</h3>
+                <p>
+                    في هذه التجربة، نقوم بدراسة ظاهرة التمغنط بالكهرباء (الكهرومغناطيسية). عند مرور تيار كهربائي في سلك موصل، ينشأ حوله مجال مغناطيسي.
+                </p>
+                <p>
+                    عندما نلف السلك حول مسمار حديدي ونمرر التيار الكهربائي، يصبح المسمار ممغنطًا مؤقتًا ويتصرف كمغناطيس كهربائي. يمكننا ملاحظة ذلك من خلال توزيع برادة الحديد حول المغناطيس الكهربائي.
+                </p>
+                <p>
+                    عند إغلاق الدائرة الكهربائية، يتولد مجال مغناطيسي حول الملف، وعند فتح الدائرة يختفي المجال المغناطيسي.
+                </p>
+                <p>
+                    <strong>قاعدة اليد اليمنى:</strong> إذا أمسكنا السلك باليد اليمنى بحيث يشير الإبهام إلى اتجاه التيار، فإن الأصابع تشير إلى اتجاه المجال المغناطيسي.
+                </p>
+            </div>
+            
+            <div id="controls">
+                <button id="simulate-btn" class="control-btn">بدء المحاكاة</button>
+                <button id="stop-btn" class="control-btn" disabled>إيقاف المحاكاة</button>
+                <button id="reset-btn" class="control-btn">إعادة الضبط</button>
+            </div>
+            
+            <div class="equation-box">
+                <h3>المفاهيم العلمية</h3>
+                <div class="equation">B = μ₀ × I / (2πr)</div>
+                <p>قانون أمبير: شدة المجال المغناطيسي حول سلك مستقيم</p>
+                <div class="equation">F = I × L × B</div>
+                <p>قوة لورنتز: القوة المؤثرة على سلك يحمل تيارًا في مجال مغناطيسي</p>
+            
+            
+           <div class="equation">
+                <h3>تعليمات التجربة</h3>
+                <ol>
+                    <li>اسحب الأدوات إلى مساحة العمل</li>
+                    <li>قم بتوصيل الدائرة الكهربائية</li>
+                    <li>اضف برادة الحديد حول المغناطيس الكهربائي</li>
+                    <li>اضغط "بدء المحاكاة" وشاهد التمغنط</li>
+                </ol>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const workspace = document.getElementById('workspace');
+            const tools = document.querySelectorAll('.tool');
+            const messageBox = document.getElementById('message-box');
+            const tooltip = document.getElementById('tooltip');
+            
+            let draggedItem = null;
+            let offsetX, offsetY;
+            let items = {
+                battery: null,
+                electromagnet: null,
+                filings: null,
+                switch: null,
+                wires: []
+            };
+            
+            let isSimulating = false;
+            let activeWire = null;
+            let wireStartPoint = null;
+            let simulationInterval = null;
+            
+            // إعداد أدوات السحب والإفلات
+            tools.forEach(tool => {
+                tool.addEventListener('dragstart', function(e) {
+                    draggedItem = this.cloneNode(true);
+                    draggedItem.classList.add('lab-item');
+                    draggedItem.style.position = 'absolute';
+                    
+                    const rect = this.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    
+                    e.dataTransfer.setData('text/plain', '');
+                    this.style.opacity = '0.4';
+                });
+                
+                tool.addEventListener('touchstart', handleTouchStart, { passive: false });
+                
+                // إضافة تلميحات
+                tool.addEventListener('mouseenter', showTooltip);
+                tool.addEventListener('mouseleave', hideTooltip);
+                tool.addEventListener('touchstart', function(e) {
+                    showTooltip(e);
+                    setTimeout(hideTooltip, 2000);
+                }, { passive: false });
+            });
+            
+            function showTooltip(e) {
+                const tool = e.currentTarget;
+                const title = tool.getAttribute('title');
+                if (!title) return;
+                
+                const rect = tool.getBoundingClientRect();
+                tooltip.textContent = title;
+                tooltip.style.left = `${rect.left + rect.width/2}px`;
+                tooltip.style.top = `${rect.top - 30}px`;
+                tooltip.classList.add('show');
+            }
+            
+            function hideTooltip() {
+                tooltip.classList.remove('show');
+            }
+            
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = e.target.closest('.tool');
+                
+                if (!target) return;
+                
+                draggedItem = target.cloneNode(true);
+                draggedItem.classList.add('lab-item');
+                draggedItem.style.position = 'absolute';
+                
+                const rect = target.getBoundingClientRect();
+                offsetX = touch.clientX - rect.left;
+                offsetY = touch.clientY - rect.top;
+                
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+                workspace.appendChild(draggedItem);
+                
+                const type = draggedItem.getAttribute('data-type');
+                const id = `item-${Date.now()}`;
+                draggedItem.setAttribute('data-id', id);
+                
+                if (type === 'wire') {
+                    createWire(draggedItem, x, y);
+                } else {
+                    if (type === 'battery') {
+                        items.battery = { id, element: draggedItem };
+                        addBatteryElement(draggedItem);
+                    }
+                    else if (type === 'electromagnet') {
+                        items.electromagnet = { id, element: draggedItem };
+                        addElectromagnetElement(draggedItem);
+                    }
+                    else if (type === 'filings') {
+                        items.filings = { id, element: draggedItem };
+                        addFilingsElement(draggedItem);
+                    }
+                    else if (type === 'switch') {
+                        items.switch = { id, element: draggedItem };
+                        addSwitchElement(draggedItem);
+                    }
+                }
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+                target.style.opacity = '0.4';
+            }
+            
+            function handleTouchMove(e) {
+                if (!draggedItem) return;
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const x = touch.clientX - offsetX - workspace.getBoundingClientRect().left;
+                const y = touch.clientY - offsetY - workspace.getBoundingClientRect().top;
+                
+                draggedItem.style.left = `${x}px`;
+                draggedItem.style.top = `${y}px`;
+                
+                if (draggedItem.getAttribute('data-type') === 'wire') {
+                    updateWirePosition(draggedItem, x, y);
+                }
+            }
+            
+            function handleTouchEnd() {
+                if (!draggedItem) return;
+                
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+                
+                const tool = document.querySelector('.tool[data-type="' + draggedItem.getAttribute('data-type') + '"]');
+                if (tool) tool.style.opacity = '1';
+                
+                if (draggedItem.getAttribute('data-type') === 'wire') {
+                    finalizeWireCreation(draggedItem);
+                } else {
+                    setupDraggable(draggedItem);
+                }
+                
+                draggedItem = null;
+            }
+            
+            workspace.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            workspace.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                if (draggedItem) {
+                    const x = e.clientX - offsetX - workspace.getBoundingClientRect().left;
+                    const y = e.clientY - offsetY - workspace.getBoundingClientRect().top;
+                    
+                    draggedItem.style.left = `${x}px`;
+                    draggedItem.style.top = `${y}px`;
+                    workspace.appendChild(draggedItem);
+                    
+                    const type = draggedItem.getAttribute('data-type');
+                    const id = `item-${Date.now()}`;
+                    draggedItem.setAttribute('data-id', id);
+                    
+                    if (type === 'wire') {
+                        createWire(draggedItem, x, y);
+                    } else {
+                        if (type === 'battery') {
+                            items.battery = { id, element: draggedItem };
+                            addBatteryElement(draggedItem);
+                        }
+                        else if (type === 'electromagnet') {
+                            items.electromagnet = { id, element: draggedItem };
+                            addElectromagnetElement(draggedItem);
+                        }
+                        else if (type === 'filings') {
+                            items.filings = { id, element: draggedItem };
+                            addFilingsElement(draggedItem);
+                        }
+                        else if (type === 'switch') {
+                            items.switch = { id, element: draggedItem };
+                            addSwitchElement(draggedItem);
+                        }
+                    }
+                    
+                    const tool = document.querySelector('.tool[data-type="' + type + '"]');
+                    if (tool) tool.style.opacity = '1';
+                    
+                    setupDraggable(draggedItem);
+                    draggedItem = null;
+                }
+            });
+            
+            function addBatteryElement(element) {
+                const battery = document.createElement('div');
+                battery.className = 'battery';
+                
+                const top = document.createElement('div');
+                top.className = 'battery-top';
+                
+                const plus = document.createElement('div');
+                plus.className = 'battery-plus';
+                plus.textContent = '';
+                
+                const minus = document.createElement('div');
+                minus.className = 'battery-minus';
+                minus.textContent = '';
+                
+                battery.appendChild(top);
+                battery.appendChild(plus);
+                battery.appendChild(minus);
+                element.appendChild(battery);
+                
+                // إضافة نقاط التوصيل
+                
+                
+                
+            }
+            
+            function addElectromagnetElement(element) {
+                const electromagnet = document.createElement('div');
+                electromagnet.className = 'electromagnet';
+                
+                const nail = document.createElement('div');
+                nail.className = 'iron-nail';
+                
+                const coil = document.createElement('div');
+                coil.className = 'coil';
+                
+                electromagnet.appendChild(coil);
+                electromagnet.appendChild(nail);
+                element.appendChild(electromagnet);
+                
+                // إضافة نقاط التوصيل
+                const connectionLeft = document.createElement('div');
+                connectionLeft.className = 'connection-point';
+                connectionLeft.style.top = '30px';
+                connectionLeft.style.left = '10px';
+                element.appendChild(connectionLeft);
+                
+                const connectionRight = document.createElement('div');
+                connectionRight.className = 'connection-point';
+                connectionRight.style.top = '30px';
+                connectionRight.style.right = '10px';
+                element.appendChild(connectionRight);
+            }
+            
+            function addFilingsElement(element) {
+    const filings = document.createElement('div');
+    filings.className = 'iron-filings';
+    element.appendChild(filings);
+    
+    // زيادة كمية برادة الحديد من 50 إلى 150 قطعة
+    for (let i = 0; i < 150; i++) {
+        const filing = document.createElement('div');
+        filing.className = 'filing';
+        
+        // زيادة حجم كل قطعة برادة
+        filing.style.width = `${15 + Math.random() * 10}px`; // بين 15 و25 بكسل
+        filing.style.height = `${3 + Math.random() * 2}px`; // بين 3 و5 بكسل
+        
+        filing.style.left = `${Math.random() * 140 + 5}px`;
+        filing.style.top = `${Math.random() * 140 + 5}px`;
+        filing.style.transform = `rotate(${Math.random() * 360}deg)`;
+        
+        // إضافة تدرج لوني لجعلها أكثر واقعية
+        filing.style.background = `linear-gradient(to right, #7f8c8d, #95a5a6, #7f8c8d)`;
+        filing.style.borderRadius = '2px';
+        
+        filings.appendChild(filing);
+    }
+}
+             
+            function addSwitchElement(element) {
+                const switchElement = document.createElement('div');
+                switchElement.className = 'switch';
+                
+                const base = document.createElement('div');
+                base.className = 'switch-base';
+                
+                const lever = document.createElement('div');
+                lever.className = 'switch-lever off';
+                
+                const connectionLeft = document.createElement('div');
+                connectionLeft.className = 'switch-connection left';
+                
+                const connectionRight = document.createElement('div');
+                connectionRight.className = 'switch-connection right';
+                
+                base.appendChild(lever);
+                base.appendChild(connectionLeft);
+                base.appendChild(connectionRight);
+                switchElement.appendChild(base);
+                element.appendChild(switchElement);
+                
+                // إضافة نقاط التوصيل
+                
+                
+                const connectionPointRight = document.createElement('div');
+                connectionPointRight.className = 'connection-point';
+                connectionPointRight.style.bottom = '10px';
+                connectionPointRight.style.right = '10px';
+                element.appendChild(connectionPointRight);
+                
+                // إضافة تفاعل النقر/اللمس للمفتاح
+                element.addEventListener('click', toggleSwitch);
+                element.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    toggleSwitch(e);
+                }, { passive: false });
+            }
+            
+            function toggleSwitch(e) {
+                e.stopPropagation();
+                const element = e.currentTarget;
+                const lever = element.querySelector('.switch-lever');
+                
+                if (lever.classList.contains('off')) {
+                    lever.classList.remove('off');
+                    lever.classList.add('on');
+                } else {
+                    lever.classList.remove('on');
+                    lever.classList.add('off');
+                }
+                
+                if (isSimulating) {
+                    updateMagneticField();
+                }
+            }
+            
+            function addConnectionPoint(element) {
+                const point = document.createElement('div');
+                point.className = 'connection-point';
+                element.appendChild(point);
+            }
+            
+            function createWire(wireElement, x, y) {
+                const wireContainer = document.createElement('div');
+                wireContainer.className = 'wire-container';
+                wireContainer.style.left = `${x}px`;
+                wireContainer.style.top = `${y}px`;
+                wireContainer.setAttribute('data-id', wireElement.getAttribute('data-id'));
+                
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute('width', '200');
+                svg.setAttribute('height', '200');
+                svg.setAttribute('viewBox', '0 0 200 200');
+                svg.style.touchAction = 'none';
+                
+                const startControl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                startControl.setAttribute('cx', '30');
+                startControl.setAttribute('cy', '50');
+                startControl.setAttribute('r', '15');
+                startControl.setAttribute('class', 'wire-control');
+                startControl.setAttribute('data-end', 'start');
+                
+                const endControl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                endControl.setAttribute('cx', '170');
+                endControl.setAttribute('cy', '50');
+                endControl.setAttribute('r', '15');
+                endControl.setAttribute('class', 'wire-control');
+                endControl.setAttribute('data-end', 'end');
+                
+                const wireBody = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                wireBody.setAttribute('d', 'M30,50 Q100,50 170,50');
+                wireBody.setAttribute('class', 'wire');
+                
+                const startEnd = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                startEnd.setAttribute('cx', '30');
+                startEnd.setAttribute('cy', '50');
+                startEnd.setAttribute('r', '8');
+                startEnd.setAttribute('class', 'wire-end');
+                startEnd.setAttribute('data-end', 'start');
+                
+                const endEnd = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                endEnd.setAttribute('cx', '170');
+                endEnd.setAttribute('cy', '50');
+                endEnd.setAttribute('r', '8');
+                endEnd.setAttribute('class', 'wire-end');
+                endEnd.setAttribute('data-end', 'end');
+                
+                svg.appendChild(wireBody);
+                svg.appendChild(startEnd);
+                svg.appendChild(endEnd);
+                svg.appendChild(startControl);
+                svg.appendChild(endControl);
+                
+                wireContainer.appendChild(svg);
+                workspace.appendChild(wireContainer);
+                
+                setupWireControls(wireContainer);
+                wireElement.remove();
+                
+                items.wires.push({
+                    id: wireContainer.getAttribute('data-id'),
+                    element: wireContainer,
+                    connectedTo: { start: null, end: null },
+                    startConnected: false,
+                    endConnected: false
+                });
+                
+                setupDraggable(wireContainer);
+            }
+            
+            function setupWireControls(wireContainer) {
+                const svg = wireContainer.querySelector('svg');
+                const controls = svg.querySelectorAll('.wire-control, .wire-end');
+                
+                controls.forEach(control => {
+                    control.addEventListener('mousedown', startWireAdjust);
+                    control.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        startWireAdjust(e);
+                    }, { passive: false });
+                });
+                
+                const ends = svg.querySelectorAll('.wire-end');
+                ends.forEach(end => {
+                    end.addEventListener('mouseup', connectToComponent);
+                    end.addEventListener('touchend', function(e) {
+                        e.preventDefault();
+                        connectToComponent(e);
+                    }, { passive: false });
+                });
+            }
+            
+            function startWireAdjust(e) {
+                e.stopPropagation();
+                const isTouch = e.type === 'touchstart';
+                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+                
+                activeWire = e.target.closest('.wire-container');
+                const end = e.target.getAttribute('data-end');
+                
+                wireStartPoint = {
+                    x: clientX,
+                    y: clientY,
+                    end: end,
+                    cx: parseFloat(e.target.getAttribute('cx')),
+                    cy: parseFloat(e.target.getAttribute('cy'))
+                };
+                
+                document.addEventListener('mousemove', adjustWire);
+                document.addEventListener('touchmove', adjustWire, { passive: false });
+                document.addEventListener('mouseup', stopWireAdjust);
+                document.addEventListener('touchend', stopWireAdjust);
+            }
+            
+            function adjustWire(e) {
+                if (!activeWire || !wireStartPoint) return;
+                e.preventDefault();
+                
+                const isTouch = e.type === 'touchmove';
+                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+                
+                const dx = (clientX - wireStartPoint.x) / 2;
+                const dy = (clientY - wireStartPoint.y) / 2;
+                
+                const svg = activeWire.querySelector('svg');
+                const control = svg.querySelector(`.wire-control[data-end="${wireStartPoint.end}"]`);
+                const end = svg.querySelector(`.wire-end[data-end="${wireStartPoint.end}"]`);
+                
+                const newX = wireStartPoint.cx + dx;
+                const newY = wireStartPoint.cy + dy;
+                
+                control.setAttribute('cx', newX);
+                control.setAttribute('cy', newY);
+                end.setAttribute('cx', newX);
+                end.setAttribute('cy', newY);
+                
+                updateWirePath(activeWire);
+            }
+            
+            function updateWirePath(wireContainer) {
+                const svg = wireContainer.querySelector('svg');
+                const path = svg.querySelector('.wire');
+                const startControl = svg.querySelector('.wire-control[data-end="start"]');
+                const endControl = svg.querySelector('.wire-control[data-end="end"]');
+                
+                const x1 = parseFloat(startControl.getAttribute('cx'));
+                const y1 = parseFloat(startControl.getAttribute('cy'));
+                const x2 = parseFloat(endControl.getAttribute('cx'));
+                const y2 = parseFloat(endControl.getAttribute('cy'));
+                
+                const midX = (x1 + x2) / 2;
+                let midY = (y1 + y2) / 2;
+                
+                const yDiff = y2 - y1;
+                midY += yDiff * 0.5;
+                
+                path.setAttribute('d', `M${x1},${y1} Q${midX},${midY} ${x2},${y2}`);
+            }
+            
+            function connectToComponent(e) {
+                const isTouch = e.type === 'touchend';
+                const clientX = isTouch ? e.changedTouches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.changedTouches[0].clientY : e.clientY;
+                
+                const endElement = e.target;
+                const wireContainer = endElement.closest('.wire-container');
+                const endType = endElement.getAttribute('data-end');
+                
+                // البحث عن أقرب نقطة توصيل
+                const connectionPoints = document.querySelectorAll('.connection-point');
+                let closestPoint = null;
+                let minDistance = Infinity;
+                
+                connectionPoints.forEach(point => {
+                    const pointRect = point.getBoundingClientRect();
+                    const pointX = pointRect.left + pointRect.width / 2;
+                    const pointY = pointRect.top + pointRect.height / 2;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(clientX - pointX, 2) + 
+                        Math.pow(clientY - pointY, 2)
+                    );
+                    
+                    if (distance < minDistance && distance < 40) {
+                        minDistance = distance;
+                        closestPoint = point;
+                    }
+                });
+                
+                if (closestPoint) {
+                    const component = closestPoint.parentElement;
+                    const componentRect = component.getBoundingClientRect();
+                    const wireRect = wireContainer.getBoundingClientRect();
+                    
+                    const x = componentRect.left + closestPoint.offsetLeft + closestPoint.offsetWidth/2 - wireRect.left;
+                    const y = componentRect.top + closestPoint.offsetTop + closestPoint.offsetHeight/2 - wireRect.top;
+                    
+                    const svg = wireContainer.querySelector('svg');
+                    const control = svg.querySelector(`.wire-control[data-end="${endType}"]`);
+                    const end = svg.querySelector(`.wire-end[data-end="${endType}"]`);
+                    
+                    control.setAttribute('cx', x);
+                    control.setAttribute('cy', y);
+                    end.setAttribute('cx', x);
+                    end.setAttribute('cy', y);
+                    end.classList.add('connected');
+                    
+                    updateWirePath(wireContainer);
+                    
+                    const wireId = wireContainer.getAttribute('data-id');
+                    const componentId = component.getAttribute('data-id');
+                    
+                    const wireIndex = items.wires.findIndex(w => w.id === wireId);
+                    if (wireIndex !== -1) {
+                        items.wires[wireIndex].connectedTo[endType] = componentId;
+                        items.wires[wireIndex][`${endType}Connected`] = true;
+                    }
+                    
+                    showMessage('تم التوصيل بنجاح');
+                }
+            }
+            
+            function stopWireAdjust() {
+                document.removeEventListener('mousemove', adjustWire);
+                document.removeEventListener('touchmove', adjustWire);
+                document.removeEventListener('mouseup', stopWireAdjust);
+                document.removeEventListener('touchend', stopWireAdjust);
+                
+                activeWire = null;
+                wireStartPoint = null;
+            }
+            
+            function setupDraggable(element) {
+                let isDragging = false;
+                let startX, startY, startLeft, startTop;
+                
+                element.addEventListener('mousedown', startDrag);
+                element.addEventListener('touchstart', startDragTouch, { passive: false });
+                
+                function startDrag(e) {
+                    if (isSimulating || e.target.classList.contains('wire-control') || e.target.classList.contains('wire-end') || e.target.classList.contains('connection-point')) return;
+                    e.stopPropagation();
+                    
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', stopDrag);
+                }
+                
+                function startDragTouch(e) {
+                    if (isSimulating || e.target.classList.contains('wire-control') || e.target.classList.contains('wire-end') || e.target.classList.contains('connection-point')) return;
+                    e.preventDefault();
+                    
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    
+                    const rect = element.getBoundingClientRect();
+                    startLeft = rect.left - workspace.getBoundingClientRect().left;
+                    startTop = rect.top - workspace.getBoundingClientRect().top;
+                    
+                    element.style.cursor = 'grabbing';
+                    element.style.zIndex = '10';
+                    
+                    document.addEventListener('touchmove', dragTouch, { passive: false });
+                    document.addEventListener('touchend', stopDrag);
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function dragTouch(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    const touch = e.touches[0];
+                    const dx = touch.clientX - startX;
+                    const dy = touch.clientY - startY;
+                    
+                    element.style.left = `${startLeft + dx}px`;
+                    element.style.top = `${startTop + dy}px`;
+                }
+                
+                function stopDrag() {
+                    isDragging = false;
+                    element.style.cursor = 'grab';
+                    element.style.zIndex = '1';
+                    
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('touchmove', dragTouch);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchend', stopDrag);
+                }
+            }
+            
+            document.getElementById('simulate-btn').addEventListener('click', function() {
+                if (isSimulating) return;
+                
+                // التحقق من صحة الإعداد
+                if (!items.battery) {
+                    showMessage('الرجاء وضع مصدر التيار أولاً');
+                    return;
+                }
+                
+                if (!items.electromagnet) {
+                    showMessage('الرجاء وضع المغناطيس الكهربائي أولاً');
+                    return;
+                }
+                
+                if (!items.switch) {
+                    showMessage('الرجاء وضع المفتاح الكهربائي أولاً');
+                    return;
+                }
+                
+                if (items.wires.length < 3) {
+                    showMessage('الرجاء وضع 3 أسلاك على الأقل');
+                    return;
+                }
+                
+                if (!items.filings) {
+                    showMessage('الرجاء إضافة برادة الحديد حول المغناطيس الكهربائي');
+                    return;
+                }
+                
+                // بدء المحاكاة
+                isSimulating = true;
+                showMessage('جارٍ تشغيل التجربة...');
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = true;
+                document.getElementById('stop-btn').disabled = false;
+                
+                // عرض برادة الحديد
+                const filings = items.filings.element.querySelector('.iron-filings');
+                filings.style.display = 'block';
+                
+                // تحديث المجال المغناطيسي
+                updateMagneticField();
+                
+                // بدء حركة الإلكترونات
+                simulationInterval = setInterval(() => {
+                    simulateElectronFlow();
+                }, 1000);
+            });
+            
+            
+           function updateMagneticField() {
+    if (!items.electromagnet || !items.filings || !items.switch) return;
+    
+    const filings = items.filings.element.querySelector('.iron-filings');
+    const lever = items.switch.element.querySelector('.switch-lever');
+    const isSwitchOn = lever.classList.contains('on');
+    
+    if (isSwitchOn) {
+        // عندما يكون المفتاح مغلقًا (المجال المغناطيسي نشط)
+        filings.style.display = 'block';
+        
+        // إضافة تأثيرات بصرية للمجال المغناطيسي
+        const electromagnet = items.electromagnet.element.querySelector('.electromagnet');
+        
+        // إزالة أي تأثيرات سابقة إذا كانت موجودة
+        electromagnet.querySelectorAll('.magnetic-field').forEach(el => el.remove());
+        
+        // إنشاء تأثير المجال المغناطيسي بألوان ساطعة
+        const fieldEffect = document.createElement('div');
+        fieldEffect.className = 'magnetic-field';
+        fieldEffect.style.position = 'absolute';
+        fieldEffect.style.width = '200px';
+        fieldEffect.style.height = '200px';
+        fieldEffect.style.borderRadius = '50%';
+        fieldEffect.style.background = 'radial-gradient(circle, rgba(0,255,255,0.3) 0%, rgba(0,100,255,0.2) 50%, transparent 70%)';
+        fieldEffect.style.boxShadow = '0 0 30px rgba(0, 200, 255, 0.5)';
+        fieldEffect.style.top = '-40px';
+        fieldEffect.style.left = '-70px';
+        fieldEffect.style.zIndex = '0';
+        fieldEffect.style.animation = 'pulseField 2s infinite alternate';
+        
+        electromagnet.appendChild(fieldEffect);
+        
+        // ترتيب برادة الحديد في نمط المجال المغناطيسي مع ألوان متدرجة
+        const filingsElements = filings.querySelectorAll('.filing');
+        const centerX = 75;
+        const centerY = 75;
+        
+        filingsElements.forEach(filing => {
+            const x = parseFloat(filing.style.left) - centerX;
+            const y = parseFloat(filing.style.top) - centerY;
+            const distance = Math.sqrt(x * x + y * y);
+            
+            if (distance < 70) {
+                // زاوية الميل حسب المجال المغناطيسي
+                let angle;
+                if (Math.abs(x) < 10) {
+                    angle = 90;
+                } else {
+                    angle = Math.atan(y / x) * 180 / Math.PI;
+                    if (x < 0) angle += 180;
+                }
+                
+                // تعديل الزاوية لإنشاء نمط المجال المغناطيسي
+                const fieldAngle = (angle + 90) % 180;
+                filing.style.transform = `rotate(${fieldAngle}deg)`;
+                
+                // تلوين برادة الحديد حسب قوة المجال (مسافة من المركز)
+                const intensity = 1 - (distance / 70);
+                filing.style.backgroundColor = `hsl(${200 + intensity * 60}, 100%, ${50 + intensity * 20}%)`;
+                filing.style.boxShadow = `0 0 ${3 + intensity * 5}px hsl(${200 + intensity * 60}, 100%, 50%)`;
+                filing.style.transition = 'all 0.5s ease-out';
+            }
+        });
+    } else {
+        // عندما يكون المفتاح مفتوحًا (المجال المغناطيسي غير نشط)
+        filings.style.display = 'none';
+        
+        // إزالة تأثير المجال المغناطيسي
+        const electromagnet = items.electromagnet.element.querySelector('.electromagnet');
+        electromagnet.querySelectorAll('.magnetic-field').forEach(el => el.remove());
+    }
+}
+
+// إضافة أنيميشن النبض للمجال المغناطيسي
+
+
+
+            function simulateElectronFlow() {
+                // حركة الإلكترونات في الأسلاك
+                items.wires.forEach(wire => {
+                    const svg = wire.element.querySelector('svg');
+                    const path = svg.querySelector('.wire');
+                    
+                    if (!svg.querySelector('.electron-flow')) {
+                        const electronPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        electronPath.setAttribute('d', path.getAttribute('d'));
+                        electronPath.setAttribute('class', 'electron-flow');
+                        svg.appendChild(electronPath);
+                    }
+                    
+                    // إنشاء إلكترونات مرئية
+                    createElectron(wire.element);
+                });
+            }
+            
+            function createElectron(wireElement) {
+                const svg = wireElement.querySelector('svg');
+                const path = svg.querySelector('.wire');
+                const pathLength = path.getTotalLength();
+                
+                const electron = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                electron.setAttribute('class', 'electron');
+                electron.setAttribute('r', '3');
+                
+                let progress = 0;
+                const speed = 0.02;
+                
+                function animate() {
+                    if (progress >= 1 || !isSimulating) {
+                        electron.remove();
+                        return;
+                    }
+                    
+                    progress += speed;
+                    const point = path.getPointAtLength(progress * pathLength);
+                    
+                    electron.setAttribute('cx', point.x);
+                    electron.setAttribute('cy', point.y);
+                    
+                    requestAnimationFrame(animate);
+                }
+                
+                svg.appendChild(electron);
+                animate();
+            }
+            
+            function stopSimulation() {
+                clearInterval(simulationInterval);
+                
+                // إزالة جميع التأثيرات المرئية
+                document.querySelectorAll('.electron').forEach(el => el.remove());
+                document.querySelectorAll('.electron-flow').forEach(el => el.remove());
+                
+                // إخفاء برادة الحديد
+                if (items.filings) {
+                    const filings = items.filings.element.querySelector('.iron-filings');
+                    filings.style.display = 'none';
+                }
+                
+                isSimulating = false;
+                document.getElementById('simulate-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                showMessage('تم إيقاف المحاكاة');
+            }
+            
+            document.getElementById('stop-btn').addEventListener('click', stopSimulation);
+            
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                stopSimulation();
+                
+                // إزالة جميع العناصر
+                document.querySelectorAll('.lab-item').forEach(item => item.remove());
+                document.querySelectorAll('.wire-container').forEach(wire => wire.remove());
+                
+                // إعادة تعيين المتغيرات
+                items = {
+                    battery: null,
+                    electromagnet: null,
+                    filings: null,
+                    switch: null,
+                    wires: []
+                };
+                
+                // تفعيل/تعطيل الأزرار
+                document.getElementById('simulate-btn').disabled = false;
+                
+                showMessage('تم إعادة ضبط التجربة');
+            });
+            
+            function showMessage(message) {
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
