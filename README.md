@@ -1,9 +1,9 @@
 
-# المعمل الافتراضي – Virtual Lab
+# Virtual Lab – المعمل الافتراضي
 
 <p align="center">
-  <a href="https://your-username.github.io/virtual-lab/">
-    <img src="images/main_scrreen.png" alt="المعمل الافتراضي – الصفحة الرئيسية" width="100%">
+  <a href="https://syfd74582.github.io/School-lab/">
+    <img src="images/main_scrreen.png" alt="Virtual Lab – Homepage" width="100%">
   </a>
 </p>
 
@@ -16,57 +16,74 @@
 
 ---
 
-## 📖 عن المشروع
+## 📖 About the Project
+
 <p align="center">
-  <a href="https://your-username.github.io/virtual-lab/">
-    <img src="images/main_scrreen2.png" alt="ا" width="100%">
+  <a href="https://syfd74582.github.io/School-lab/">
+    <img src="images/main_scrreen2.png" alt="Virtual Lab Interface" width="100%">
   </a>
 </p>
 
-**المعمل الافتراضي** هو موقع ويب يهدف إلى تسهيل التعليم التفاعلي من خلال تقديم مجموعة من التجارب العلمية والرياضية في بيئة محاكاة. يمكن للطلاب والمعلمين استكشاف المفاهيم بطريقة بصرية وتفاعلية دون الحاجة إلى تجهيزات معملية حقيقية.
+##
 
-يحتوي الموقع على:
-- تصنيفات للتجارب: **العلوم**، **الفيزياء**، **الرياضيات**، و**الكل**.
-- شريط بحث للوصول السريع إلى التجارب.
-- إمكانية التبديل بين عرض **الشبكة** و**القائمة**.
-- **الوضع الليلي** (Dark Mode) مع حفظ التفضيل.
-- تصميم متجاوب يحاكي تجربة سطح المكتب على الهواتف (مع تمرير أفقي).
+<p align="center">
+  <a href="https://syfd74582.github.io/School-lab/">
+    <img src="main_screen3.png" alt="Virtual Lab Experiments" width="100%">
+  </a>
+</p>
+
+##
+
+<p align="center">
+  <a href="https://syfd74582.github.io/School-lab/">
+    <img src="main_screen4.png" alt="Virtual Lab Features" width="100%">
+  </a>
+</p>
+
+**Virtual Lab** is a website designed to facilitate interactive education by providing a collection of scientific and mathematical experiments in a simulation environment. Students and teachers can explore concepts visually and interactively without the need for physical lab equipment.
+
+The website includes:
+- Experiment categories: **Sciences**, **Physics**, **Mathematics**, and **All**.
+- A search bar for quick access to experiments.
+- The ability to toggle between **Grid** and **List** views.
+- **Dark Mode** with saved preferences.
+- A responsive design that mimics the desktop experience on mobile devices (with horizontal scrolling).
 
 ---
 
-## ✨ المميزات
+## ✨ Features
 
-- **واجهة مستخدم عربية بالكامل** (من اليمين لليسار).
-- **عرض جميع التجارب** عند تحميل الصفحة.
-- **فلترة حسب المادة** عبر أزرار التصنيف (صور مصغرة + عنوان).
-- **بحث فوري** – يبرز النتائج ويتمركز إليها.
-- **حفظ تفضيلات المستخدم** (الوضع المظلم، العرض الشبكي/القائمة) عبر Local Storage.
-- **روابط مستقرة** – تمت إعادة تسمية الملفات والمجلدات بأسماء إنجليزية لضمان التوافق مع GitHub Pages.
-- **صفحات تجارب منفصلة** يمكن تعديلها لاحقاً لتصبح روابط حقيقية.
+- **Fully Arabic user interface** (right-to-left layout).
+- **All experiments displayed** by default on page load.
+- **Filter by subject** via category buttons (thumbnail image + title).
+- **Instant search** – highlights results and scrolls to them.
+- **User preferences saved** (dark mode, grid/list view) using Local Storage.
+- **Stable links** – folders and files renamed to English to ensure compatibility with GitHub Pages.
+- **Separate experiment pages** that can be updated later with real content.
 
 ---
 
-## 🚀 كيفية الاستخدام
+## 🚀 How to Use
 
-1. **استنساخ المشروع**  
+1. **Clone the repository**  
    ```bash
-   git clone https://github.com/your-username/virtual-lab.git
+   git clone https://github.com/syfd74582/School-lab.git
    ```
-2. **تعديل الروابط**  
-   داخل ملف `index.html`، تأكد من أن مسارات التجارب (`href`) تشير إلى الملفات الفعلية على جهازك أو على GitHub.
-3. **رفع الملفات إلى GitHub**  
-   تأكد من رفع جميع مجلدات التجارب مع الصور الخاصة بها.
-4. **تفعيل GitHub Pages**  
-   اذهب إلى `Settings > Pages` واختر الفرع الرئيسي كـ Source، وسيتم نشر الموقع على رابط مثل `https://your-username.github.io/virtual-lab/`.
+2. **Update links**  
+   Inside `index.html`, make sure the experiment paths (`href`) point to the actual files on your device or GitHub.
+3. **Upload files to GitHub**  
+   Ensure all experiment folders and their images are uploaded.
+4. **Enable GitHub Pages**  
+   Go to `Settings > Pages` and select the main branch as the source. The site will be published at a URL like `https://your-username.github.io/repo-name/`.
 
 ---
 
-## 📁 هيكل المشروع
+## 📁 Project Structure
 
 ```
-virtual-lab/
-├── index.html                     # الصفحة الرئيسية
-├── images/                        # صور الشعار والخلفيات
+School-lab/
+├── index.html                     # Main page
+├── images/                        # Logos and backgrounds
 │   ├── picher/
 │   │   ├── logo.png
 │   │   ├── Chemistry.png
@@ -74,46 +91,46 @@ virtual-lab/
 │   │   └── Math.png
 │   ├── cu_logo.ico
 │   └── bb.png
-├── newton-first-law/              # تجارب الفيزياء
+├── newton-first-law/              # Physics experiments
 │   ├── niotan1_all.html
 │   └── niotan-1.png
-├── reflection-1/                  # تجربة الانعكاس
-├── math/                          # تجارب الرياضيات
+├── reflection-1/                  # Reflection experiment
+├── math/                          # Mathematics experiments
 │   ├── tafatol/
 │   ├── sinn/
 │   └── ...
-├── human-plant/                   # تجارب العلوم
+├── human-plant/                   # Science experiments
 ├── oxygen-cycle/
-└── ...                            # باقي المجلدات
+└── ...                            # Remaining folders
 ```
 
-**ملاحظة:** أسماء المجلدات والملفات تحولت إلى إنجليزية لضمان عدم تعارض مع GitHub Pages.
+**Note:** Folder and file names have been converted to English to ensure compatibility with GitHub Pages.
 
 ---
 
-## 🛠 التقنيات المستخدمة
+## 🛠 Technologies Used
 
-- **HTML5** – بناء هيكل الصفحات.
-- **CSS3** – التصميم، المتغيرات، الوضع المظلم، شبكات المرونة.
-- **JavaScript (ES6)** – منطق التصفية، البحث، تبديل العرض، حفظ الإعدادات.
-- **Font Awesome** – أيقونات إضافية.
+- **HTML5** – Page structure.
+- **CSS3** – Styling, variables, dark mode, flexbox/grid.
+- **JavaScript (ES6)** – Filtering, search, view toggling, preference saving.
+- **Font Awesome** – Additional icons.
 
 ---
 
-## 📝 كيفية إضافة تجارب جديدة
+## 📝 How to Add New Experiments
 
-1. أضف مجلد التجربة في المسار المناسب (مثلاً ضمن `physics/` أو `math/` أو `science/`).
-2. ضع ملف `index.html` للتجربة داخل المجلد مع الصور المطلوبة.
-3. افتح `index.html` الرئيسي وأضف عنصر `li` جديد في القسم المناسب (الفيزياء، الرياضيات، العلوم) مع تحديث `href` ومسار الصورة.
-4. أعِد رفع الملفات إلى GitHub.
+1. Create a new folder for the experiment in the appropriate category (e.g., `physics/`, `math/`, or `science/`).
+2. Place the experiment's `index.html` file inside the folder along with required images.
+3. Open the main `index.html` and add a new `<li>` element in the appropriate section (Physics, Mathematics, or Sciences) with the updated `href` and image path.
+4. Re-upload the files to GitHub.
 
-**مثال لإضافة تجربة فيزياء جديدة:**
+**Example for adding a new physics experiment:**
 ```html
 <li>
   <a class="tile" href="./new-experiment/index.html">
-    <div class="image-holder"><img src="new-experiment/thumbnail.png" alt="وصف"></div>
+    <div class="image-holder"><img src="new-experiment/thumbnail.png" alt="Description"></div>
     <div class="information">
-      <div class="title-holder"><span class="title">اسم التجربة</span></div>
+      <div class="title-holder"><span class="title">Experiment Name</span></div>
       <div class="icons">...</div>
     </div>
   </a>
@@ -122,37 +139,41 @@ virtual-lab/
 
 ---
 
-## 🌐 العيش المباشر (Live Demo)
+## 🌐 Live Demo
 
-يمكنك مشاهدة الموقع مباشرة عبر الرابط التالي (بعد تفعيل GitHub Pages):  
-[https://your-username.github.io/virtual-lab/](https://your-username.github.io/virtual-lab/)
-
----
-
-## 🤝 المساهمة
-
-نرحب بالمساهمات! إذا أردت إضافة تجارب جديدة أو تحسين التصميم:
-1. عمل Fork للمشروع.
-2. إنشاء فرع جديد (`git checkout -b feature/amazing-feature`).
-3. تنفيذ التغييرات.
-4. رفع التغييرات (`git push origin feature/amazing-feature`).
-5. فتح Pull Request.
+You can view the live site at the following link (after enabling GitHub Pages):  
+[https://syfd74582.github.io/School-lab/](https://syfd74582.github.io/School-lab/)
 
 ---
 
-## 📄 الترخيص
+## 🤝 Contributing
 
-هذا المشروع مرخص تحت رخصة **MIT** – يمكن استخدامه وتعديله بحرية للأغراض التعليمية وغير التجارية.
-
----
-
-## 📧 التواصل
-
-للاستفسارات أو الدعم:
-- البريد الإلكتروني: info@virtuallab.edu  
-- أو عبر منصة GitHub Issues.
+Contributions are welcome! If you'd like to add new experiments or improve the design:
+1. Fork the project.
+2. Create a new branch (`git checkout -b feature/amazing-feature`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add some amazing feature'`).
+5. Push to the branch (`git push origin feature/amazing-feature`).
+6. Open a Pull Request.
 
 ---
 
-<p align="center">تم تصميم وتطوير الموقع بواسطة فريق المعمل الافتراضي – وزارة التربية والتعليم، الجمهورية اليمنية.</p>
+## 📄 License
+
+This project is licensed under the **MIT** License – feel free to use and modify it freely for educational and non-commercial purposes.
+
+---
+
+## 📧 Contact
+
+For inquiries or support:
+- Email: alqyadydnan@gmail.com
+- Or via GitHub Issues.
+
+---
+
+<p align="center">Designed and developed by me.</p>
 ```
+
+---
+ME باللغة الإنجليزية كامل مع جميع الصور والروابط الخاصة بمشروعك. 🎉
