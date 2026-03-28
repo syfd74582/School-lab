@@ -28,7 +28,7 @@
 
 <p align="center">
   <a href="https://syfd74582.github.io/School-lab/">
-    <img src="main_screen3.png" alt="Virtual Lab Experiments" width="100%">
+    <img src="images/main_screen3.png" alt="Virtual Lab Experiments" width="100%">
   </a>
 </p>
 
@@ -36,7 +36,7 @@
 
 <p align="center">
   <a href="https://syfd74582.github.io/School-lab/">
-    <img src="main_screen4.png" alt="Virtual Lab Features" width="100%">
+    <img src="images/main_screen4.png" alt="Virtual Lab Features" width="100%">
   </a>
 </p>
 
@@ -171,6 +171,3 @@ For inquiries or support:
 - Or via GitHub Issues.
 
 ---
-
-<p align="center">Designed and developed by me.</p>
-```
