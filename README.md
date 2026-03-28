@@ -2,11 +2,9 @@
 # المعمل الافتراضي – Virtual Lab
 
 <p align="center">
-  <img src="images/cu_logo.ico" alt="شعار المعمل" width="120">
-</p>
-
-<p align="center">
-  <strong>منصة تعليمية تفاعلية تحتوي على تجارب محاكاة في الفيزياء، الرياضيات، والعلوم.</strong>
+  <a href="https://your-username.github.io/virtual-lab/">
+    <img src="images/main_scrreen.png" alt="المعمل الافتراضي – الصفحة الرئيسية" width="100%">
+  </a>
 </p>
 
 <p align="center">
