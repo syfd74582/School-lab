@@ -1,5 +1,5 @@
 
-# Virtual Lab – المعمل الافتراضي
+# School Lab
 
 <p align="center">
   <a href="https://syfd74582.github.io/School-lab/">
@@ -174,6 +174,3 @@ For inquiries or support:
 
 <p align="center">Designed and developed by me.</p>
 ```
-
----
-ME باللغة الإنجليزية كامل مع جميع الصور والروابط الخاصة بمشروعك. 🎉
